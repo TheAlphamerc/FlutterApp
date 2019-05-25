@@ -4,7 +4,15 @@ class ProductCreatePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:Center(child:  Text("Create List")  ,)
-    );
+        body: Center(
+         child: RaisedButton(
+           child: Text("Create List"),
+           onPressed: (){
+             showModalBottomSheet(context: context ,builder: (BuildContext context){
+               return Center(child: Text('Save'),);
+             });
+           },
+      ),
+    ));
   }
 }
