@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/commonWidget/menu_Control.dart';
-import '../product_manager.dart';
+import 'package:flutter_app/widgets/products/Products.dart';
 
 class ProductsPage extends StatelessWidget {
   final List<Map<String, dynamic>> product;
@@ -17,14 +17,14 @@ class ProductsPage extends StatelessWidget {
           Center(
               child: GestureDetector(
             child: Container(
-              child: Icon(Icons.add),
+              child: Icon(Icons.favorite),
               padding: EdgeInsets.all(15),
             ),
             onTap: () {},
           ))
         ],
       ),
-      body: ProductManager(product),
+      body: ProductListView(product),
     );
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:flutter_app/widgets/ui_elements/title_default.dart';
+
 class ProductPage extends StatelessWidget {
-  final String text;
+  final String title;
   final String imageUrl;
-  ProductPage(this.text, this.imageUrl);
+  ProductPage(this.title, this.imageUrl);
   void _showDialague(BuildContext context) {
     showDialog(
         context: context,
@@ -36,14 +38,14 @@ class ProductPage extends StatelessWidget {
     return WillPopScope(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(text),
+          title: Text(title),
         ),
         body: Column(
           children: <Widget>[
             Image.asset(imageUrl),
             Container(
               padding: EdgeInsets.all(10),
-              child: Text('Detail',style: TextStyle(fontSize: 26,fontWeight: FontWeight.bold),),
+              child:  TitleDefault(title),
             ),
             Container(
               padding: EdgeInsets.all(10),

@@ -15,17 +15,25 @@ class MenuControlView extends StatelessWidget {
           automaticallyImplyLeading: false,
         ),
         ListTile(
+          leading: Icon(Icons.edit),
           title: Text('Manage Product'),
           onTap: () {
             Navigator.pushNamed(context, '/admin');
           },
         ),
         ListTile(
+          leading: Icon(Icons.shop),
           title: Text('Home page'),
           onTap: () {
-            Navigator.pushNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, '/home');
           },
-        )
+        ),
+        // ListTile(
+        //   title: Text('Login'),
+        //   onTap: () {
+        //     Navigator.pushReplacementNamed(context, '/login');
+        //   },
+        // )
       ],
     ));
   }
