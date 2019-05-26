@@ -3,10 +3,8 @@ import 'package:flutter_app/pages/commonWidget/menu_Control.dart';
 import '../product_manager.dart';
 
 class ProductsPage extends StatelessWidget {
-  final List<Map<String, String>> product;
-  final Function addProduct;
-  final Function deleteProduct;
-  ProductsPage(this.product, this.addProduct, this.deleteProduct) {
+  final List<Map<String, dynamic>> product;
+  ProductsPage(this.product) {
     print("[Product manager widget] Constructor ");
   }
   @override
@@ -26,7 +24,7 @@ class ProductsPage extends StatelessWidget {
           ))
         ],
       ),
-      body: ProductManager(product, addProduct, deleteProduct),
+      body: ProductManager(product),
     );
   }
 }

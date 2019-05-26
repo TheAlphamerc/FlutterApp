@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/auth.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_app/pages/product.dart';
 import 'package:flutter_app/pages/products.dart';
 import 'package:flutter_app/pages/products_Admin.dart';
-
 void main() {
+  // debugPaintSizeEnabled = false;
   runApp(MyApp());
 }
 
@@ -16,8 +16,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, String>> _products = [];
-  void _addProduct(Map<String, String> product) {
+  List<Map<String, dynamic>> _products = [];
+  void _addProduct(Map<String, dynamic> product) {
     setState(() {
       _products.add(product);
     });
@@ -36,14 +36,14 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
           primaryColor: Colors.deepOrange,
           accentColor: Colors.purple,
-          brightness: Brightness.light),
+          brightness: Brightness.light,
+          fontFamily:'Montserrat'),
+          
       // home: AuthPage(),
       routes: {
-        '/': (BuildContext context) =>
-            ProductsPage(_products, _addProduct, _deleteProduct),
-        '/admin': (BuildContext context) => ProductAdminPage(),
-        '/home': (BuildContext context) =>
-            ProductsPage(_products, _addProduct, _deleteProduct),
+        '/': (BuildContext context) => ProductsPage(_products),
+        '/admin': (BuildContext context) => ProductAdminPage( _addProduct),
+        '/home': (BuildContext context) => ProductsPage(_products,),
       },
       onGenerateRoute: (RouteSettings settings) {
         final List<String> pathElements = settings.name.split('/');
@@ -60,7 +60,7 @@ class _MyAppState extends State<MyApp> {
       onUnknownRoute: (RouteSettings settings){
         return MaterialPageRoute<bool>(
               builder: (BuildContext context) =>
-            ProductsPage(_products, _addProduct, _deleteProduct));
+            ProductsPage(_products));
         }
       
     ));
