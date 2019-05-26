@@ -18,7 +18,7 @@ class MenuControlView extends StatelessWidget {
           leading: Icon(Icons.edit),
           title: Text('Manage Product'),
           onTap: () {
-            Navigator.pushNamed(context, '/admin');
+            Navigator.pushReplacementNamed(context, '/admin');
           },
         ),
         ListTile(
