@@ -3,10 +3,7 @@ import 'package:flutter_app/pages/commonWidget/menu_Control.dart';
 import 'package:flutter_app/widgets/products/Products.dart';
 
 class ProductsPage extends StatelessWidget {
-  final List<Map<String, dynamic>> product;
-  ProductsPage(this.product) {
-    print("[Product manager widget] Constructor ");
-  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +21,7 @@ class ProductsPage extends StatelessWidget {
           ))
         ],
       ),
-      body: ProductListView(product),
+      body: ProductListView(),
     );
   }
 }

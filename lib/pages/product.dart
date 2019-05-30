@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/product.dart';
+import 'package:flutter_app/scoped_model/produts.dart';
 import 'dart:async';
 
 import 'package:flutter_app/widgets/ui_elements/title_default.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class ProductPage extends StatelessWidget {
-  final String title;
-  final String imageUrl;
-  ProductPage(this.title, this.imageUrl);
+  final int index;
+  ProductPage(this.index);
   void _showDialague(BuildContext context) {
     showDialog(
         context: context,
@@ -35,17 +37,23 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      child: Scaffold(
+    return WillPopScope(onWillPop: () {
+      print('[Product Page] Back button pressed');
+      Navigator.pop(context, false);
+      return Future.value(false);
+    }, child: ScopedModelDescendant<ProductsModel>(
+        builder: (BuildContext context, Widget widget, ProductsModel model) {
+      final Product product = model.products[index];
+      return Scaffold(
         appBar: AppBar(
-          title: Text(title),
+          title: Text(product.title),
         ),
         body: Column(
           children: <Widget>[
-            Image.asset(imageUrl),
+            Image.asset(product.image),
             Container(
               padding: EdgeInsets.all(10),
-              child:  TitleDefault(title),
+              child: TitleDefault(product.title),
             ),
             Container(
               padding: EdgeInsets.all(10),
@@ -57,12 +65,7 @@ class ProductPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      onWillPop: () {
-        print('[Product Page] Back button pressed');
-        Navigator.pop(context, false);
-        return Future.value(false);
-      },
-    );
+      );
+    }));
   }
 }

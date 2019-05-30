@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/product.dart';
+import 'package:flutter_app/scoped_model/produts.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class ProductEditPage extends StatefulWidget {
-  final Function addProduct;
-  final Map<String, dynamic> product;
-  final Function updateProduct;
-  final int productIndex;
-  const ProductEditPage({this.addProduct, this.updateProduct, this.product,this.productIndex});
   @override
   State<StatefulWidget> createState() {
     return ProductEditPageState();
@@ -25,9 +23,9 @@ class ProductEditPageState extends State<ProductEditPage> {
   };
   @override
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  Widget _buildTitle() {
+  Widget _buildTitle(Product product) {
     return TextFormField(
-      initialValue: widget.product != null ? widget.product['title'] :"",
+      initialValue: product != null ? product.title : "",
       decoration:
           InputDecoration(labelText: 'Product Tile', icon: Icon(Icons.face)),
       validator: (String value) {
@@ -42,9 +40,9 @@ class ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  Widget _buildDescription() {
+  Widget _buildDescription(Product product) {
     return TextFormField(
-      initialValue: widget.product != null ? widget.product['description'] :"",
+      initialValue: product != null ? product.description : "",
       maxLines: 2,
       decoration: InputDecoration(
           labelText: 'Product Description', icon: Icon(Icons.storage)),
@@ -60,9 +58,10 @@ class ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  Widget _buildPrice() {
+  Widget _buildPrice(Product product) {
     return TextFormField(
-      initialValue: widget.product != null ? widget.product['price'].toString() :"",
+      initialValue:
+        product != null ? product.price.toString() : "",
       decoration: InputDecoration(
           labelText: 'Product Price', icon: Icon(Icons.euro_symbol)),
       keyboardType: TextInputType.number,
@@ -90,35 +89,45 @@ class ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildRaisedButton() {
-    return RaisedButton(
-      textColor: Colors.white,
-      child: Text('Save'),
-      onPressed: () {
-        _submitForm();
-      },
-    );
+    return ScopedModelDescendant<ProductsModel>(
+        builder: (BuildContext context, Widget widget, ProductsModel model) {
+      {
+        return RaisedButton(
+            textColor: Colors.white,
+            child: Text('Save'),
+            onPressed: () =>
+                _submitForm(model.addProduct, model.updateProduct,model.slectedProductIndex));
+      }
+    });
   }
 
-  void _submitForm() {
+  void _submitForm(Function addProduct, Function updateProduct,[int selectedProduct]) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    if(widget.product == null){
-        widget.addProduct(_formData);
-    }
-    else{
-      widget.updateProduct(widget.productIndex,_formData);
+    if (selectedProduct == null) {
+      addProduct(Product(
+          title: _formData['title'],
+          description: _formData['description'],
+          price: _formData['price'],
+          image: _formData['image']));
+    } else {
+      updateProduct(
+          Product(
+              title: _formData['title'],
+              description: _formData['description'],
+              price: _formData['price'],
+              image: _formData['image']));
     }
     Navigator.pushReplacementNamed(context, '/home');
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _pagecontent(BuildContext context, Product product) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550 ? 400 : deviceWidth * .95;
     final double devicePadding = deviceWidth - targetWidth;
-    final Widget pageContent = GestureDetector(
+    return GestureDetector(
         onTap: () {
           print("Focus out");
           FocusScope.of(context).autofocus(FocusNode());
@@ -130,9 +139,9 @@ class ProductEditPageState extends State<ProductEditPage> {
                 child: ListView(
                   padding: EdgeInsets.symmetric(horizontal: devicePadding / 2),
                   children: <Widget>[
-                    _buildTitle(),
-                    _buildDescription(),
-                    _buildPrice(),
+                    _buildTitle(product),
+                    _buildDescription(product),
+                    _buildPrice(product),
                     _buildSwitchTile(),
                     SizedBox(
                       height: 30,
@@ -140,14 +149,23 @@ class ProductEditPageState extends State<ProductEditPage> {
                     _buildRaisedButton()
                   ],
                 ))));
+  }
 
-    return (widget.product == null)
-        ? pageContent
-        : Scaffold(
-            appBar: AppBar(
-              title: Text('Edit Item'),
-            ),
-            body: pageContent,
-          );
+  @override
+  Widget build(BuildContext context) {
+    return ScopedModelDescendant<ProductsModel>(
+        builder: (BuildContext context, Widget widget, ProductsModel model) {
+      {
+        final Widget pageContent = _pagecontent(context,model.selectedProduct);
+        return (model.slectedProductIndex == null)
+            ? pageContent
+            : Scaffold(
+                appBar: AppBar(
+                  title: Text('Edit Item'),
+                ),
+                body: pageContent,
+              );
+      }
+    });
   }
 }
