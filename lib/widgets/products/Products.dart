@@ -16,7 +16,7 @@ class ProductListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<ProductsModel>(builder: (BuildContext context,Widget widget,ProductsModel model){
-      return _buildProductList(model.products);
+      return _buildProductList(model.displayedproducts);
        });
   } 
 }

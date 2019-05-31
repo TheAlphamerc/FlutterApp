@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/commonWidget/menu_Control.dart';
+import 'package:flutter_app/scoped_model/produts.dart';
 import 'package:flutter_app/widgets/products/Products.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class ProductsPage extends StatelessWidget {
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,14 +12,17 @@ class ProductsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("EasyList"),
         actions: <Widget>[
-          Center(
-              child: GestureDetector(
-            child: Container(
-              child: Icon(Icons.favorite),
-              padding: EdgeInsets.all(15),
-            ),
-            onTap: () {},
-          ))
+          ScopedModelDescendant(builder:
+              (BuildContext context, Widget widget, ProductsModel model) {
+            return IconButton(
+              icon: Icon(model.displayFavouriteOnly
+                  ? Icons.favorite
+                  : Icons.favorite_border),
+              onPressed: () {
+                model.toggleDisplayModel();
+              },
+            );
+          })
         ],
       ),
       body: ProductListView(),
