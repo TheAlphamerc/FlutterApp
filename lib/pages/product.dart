@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/product.dart';
-import 'package:flutter_app/scoped_model/produts.dart';
+import 'package:flutter_app/scoped_model/main.dart';
 import 'dart:async';
 
 import 'package:flutter_app/widgets/ui_elements/title_default.dart';
@@ -41,9 +41,9 @@ class ProductPage extends StatelessWidget {
       print('[Product Page] Back button pressed');
       Navigator.pop(context, false);
       return Future.value(false);
-    }, child: ScopedModelDescendant<ProductsModel>(
-        builder: (BuildContext context, Widget widget, ProductsModel model) {
-      final Product product = model.products[index];
+    }, child: ScopedModelDescendant<MainModel>(
+        builder: (BuildContext context, Widget widget, MainModel model) {
+      final Product product = model.allProducts[index];
       return Scaffold(
         appBar: AppBar(
           title: Text(product.title),

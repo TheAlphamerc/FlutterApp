@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/pages/product_edit.dart';
-import 'package:flutter_app/scoped_model/produts.dart';
+import 'package:flutter_app/scoped_model/connected_product.dart';
+import 'package:flutter_app/scoped_model/main.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class ProductListPage extends StatelessWidget {
@@ -35,9 +36,9 @@ class ProductListPage extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<ProductsModel>(
-        builder: (BuildContext context, Widget widget, ProductsModel model) {
-      final List<Product> _products = model.products;
+    return ScopedModelDescendant<MainModel>(
+        builder: (BuildContext context, Widget widget, MainModel model) {
+      final List<Product> _products = model.allProducts;
       {
         return ListView.builder(
           itemCount: _products.length,
