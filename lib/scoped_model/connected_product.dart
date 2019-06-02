@@ -15,7 +15,9 @@ class ConnectedProductsModel extends Model {
       'description': description,
       'image':
           'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
-      'price': price
+      'price': price,
+      'email': _authenticatedUser.email,
+      'userId': _authenticatedUser.id
     };
     http
         .post('https://flutter-app-32074.firebaseio.com/products.json',
@@ -71,7 +73,8 @@ class ProductsModel extends ConnectedProductsModel {
     final Product updatedProduct = new Product(
         description: description,
         title: title,
-        image: image,
+        image:
+            "http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg",
         price: price,
         userEmail: selectedProduct.userEmail,
         userId: selectedProduct.userId);
@@ -89,11 +92,30 @@ class ProductsModel extends ConnectedProductsModel {
   void setSelectedProductIndex(int index) {
     _selSelectedIndex = index;
   }
-  void fetchProducts(){
-    http.get('https://flutter-app-32074.firebaseio.com/products.json').then((http.Response response){
-     print(json.decode(response.body));
+
+  void fetchProducts() {
+    http
+        .get('https://flutter-app-32074.firebaseio.com/products.json')
+        .then((http.Response response) {
+      print(json.decode(response.body));
+      final List<Product> fetchedProductList = [];
+      final Map<String, dynamic> productListData = json.decode(response.body);
+      productListData.forEach((String productId, dynamic productData) {
+        final Product product = new Product(
+            id: productId,
+            title: productData['title'],
+            description: productData['description'],
+            price: productData['price'],
+            image: productData['image'],
+            userEmail: productData['email'],
+            userId: productData['UserId']);
+        fetchedProductList.add(product);
+      });
+      _products = fetchedProductList;
+      notifyListeners();
     });
   }
+
   void toggleProductFavouriteToggle() {
     final bool isCurrentlyFavourite = selectedProduct.isFavourite;
     final bool newFavouriteStatus = !isCurrentlyFavourite;
