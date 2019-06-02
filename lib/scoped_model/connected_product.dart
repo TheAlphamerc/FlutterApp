@@ -130,10 +130,10 @@ class ProductsModel extends ConnectedProductsModel {
     _selSelectedIndex = index;
   }
 
-  void fetchProducts() {
+  Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
-    http
+   return http
         .get('https://flutter-app-32074.firebaseio.com/products.json')
         .then((http.Response response) {
       print(json.decode(response.body));

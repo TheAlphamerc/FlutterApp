@@ -30,9 +30,9 @@ class _ProductsPageState extends State<ProductsPage> {
       if (model.displayedproducts.length > 0 && !model.isLoading) {
         content = ProductListView();
       } else if (model.isLoading) {
-        content =Center(child: CircularProgressIndicator());
+        content = Center(child: CircularProgressIndicator());
       }
-      return content;
+      return RefreshIndicator(onRefresh: model.fetchProducts, child: content);
     });
   }
 
