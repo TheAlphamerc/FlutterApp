@@ -32,7 +32,7 @@ class ProductListPage extends StatelessWidget {
     );
   }
   Widget _circleAvatar(String image){
-    return CircleAvatar(backgroundImage: AssetImage(image),);
+    return CircleAvatar(backgroundImage: NetworkImage(image),);
   }
   @override
   Widget build(BuildContext context) {
