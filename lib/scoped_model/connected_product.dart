@@ -86,7 +86,7 @@ class ProductsModel extends ConnectedProductsModel {
       'email': selectedProduct.userEmail,
       'userId': selectedProduct.id
     };
-   return http
+    return http
         .put(
             'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json',
             body: jsonEncode(productData))
@@ -107,7 +107,19 @@ class ProductsModel extends ConnectedProductsModel {
   }
 
   void deleteProduct() {
+    _isLoading = true;
+    final deletedProductId = selectedProduct.id;
     _products.removeAt(slectedProductIndex);
+    _selSelectedIndex = null;
+    notifyListeners();
+    http
+        .delete(
+      'https://flutter-app-32074.firebaseio.com/products/${deletedProductId}.json',
+    )
+        .then((http.Response response) {
+      _isLoading = false;
+      notifyListeners();
+    });
   }
 
   void selectProduct(int index) {
