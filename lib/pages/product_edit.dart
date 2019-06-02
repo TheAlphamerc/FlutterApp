@@ -114,21 +114,29 @@ class ProductEditPageState extends State<ProductEditPage> {
     }
     _formKey.currentState.save();
     if (selectedProduct == null) {
+      print('[Debug] Form is ready in Add new form');
       addProduct(
         _formData['title'],
         _formData['description'],
         _formData['image'],
         _formData['price'],
       ).then((_) {
-        Navigator.pushReplacementNamed(context, '/home')
-            .then((_) => setSelectedProduct(null));
+        print('[Debug] Navigate to home page');
+        Navigator.pushReplacementNamed(context, '/home').then((_) {
+          print('[Debug] Set selected product to null');
+          setSelectedProduct(null);
+        });
       });
     } else {
+      print('[Debug] Form is ready in Edit  form');
       updateProduct(_formData['title'], _formData['description'],
               _formData['image'], _formData['price'])
           .then((_) {
-        Navigator.pushReplacementNamed(context, '/home')
-            .then((_) => setSelectedProduct(null));
+        print('[Debug] Navigate to home page');
+        Navigator.pushReplacementNamed(context, '/home').then((_) {
+          print('[Debug] Set selected product to null');
+          setSelectedProduct(null);
+        });
       });
       ;
     }

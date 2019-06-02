@@ -28,7 +28,7 @@ class ConnectedProductsModel extends Model {
             body: jsonEncode(productData))
         .then((http.Response response) {
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print(responseData);
+      print('[Debug] New product added');
       final Product product = new Product(
           id: responseData['name'],
           description: description,
@@ -60,7 +60,7 @@ class ProductsModel extends ConnectedProductsModel {
 
   int get selectedProductIndex {
     return _products.indexWhere((x) {
-     return x.id == _selSelectedId;
+      return x.id == _selSelectedId;
     });
   }
 
@@ -99,6 +99,7 @@ class ProductsModel extends ConnectedProductsModel {
             'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json',
             body: jsonEncode(productData))
         .then((http.Response response) {
+      print('[Debug] Product updated');
       final Product updatedProduct = new Product(
           id: selectedProduct.id,
           description: description,
@@ -119,7 +120,7 @@ class ProductsModel extends ConnectedProductsModel {
     _isLoading = true;
     final deletedProductId = selectedProduct.id;
     final int selectedProductIndex = _products.indexWhere((x) {
-     return x.id == _selSelectedId;
+      return x.id == _selSelectedId;
     });
     _products.removeAt(selectedProductIndex);
     _selSelectedId = null;
@@ -140,6 +141,9 @@ class ProductsModel extends ConnectedProductsModel {
   }
 
   void setSelectedProductId(String productId) {
+    if (productId == null) {
+      print("[Debug] setSelectedProductId is set null");
+    }
     _selSelectedId = productId;
     notifyListeners();
   }
@@ -150,12 +154,13 @@ class ProductsModel extends ConnectedProductsModel {
     return http
         .get('https://flutter-app-32074.firebaseio.com/products.json')
         .then((http.Response response) {
-      print(json.decode(response.body));
+      print('[Debug] Data fetched from api');
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
       if (productListData == null) {
         _isLoading = false;
         notifyListeners();
+
         return;
       }
       productListData.forEach((String productId, dynamic productData) {
@@ -172,6 +177,7 @@ class ProductsModel extends ConnectedProductsModel {
       _products = fetchedProductList;
       _isLoading = false;
       notifyListeners();
+      _selSelectedId = null;
     });
   }
 
