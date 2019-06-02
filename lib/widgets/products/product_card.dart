@@ -25,33 +25,32 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildActionButton(BuildContext context) {
-    return ButtonBar(
-      alignment: MainAxisAlignment.center,
-      children: <Widget>[
-        IconButton(
-          icon: Icon(Icons.info),
-          color: Theme.of(context).accentColor,
-          onPressed: () {
-            Navigator.pushNamed<bool>(
-                context, '/products/' + productIndex.toString());
-          },
-        ),
-        ScopedModelDescendant<MainModel>(
-          builder: (BuildContext context, Widget widget, MainModel model) {
-            return IconButton(
-              icon: Icon(model.allProducts[productIndex].isFavourite
-                  ? Icons.favorite
-                  : Icons.favorite_border),
-              color: Colors.red,
-              onPressed: () {
-                model.selectProduct(productIndex);
-                model.toggleProductFavouriteToggle();
-              },
-            );
-          },
-        )
-      ],
-    );
+    return ScopedModelDescendant<MainModel>(
+        builder: (BuildContext context, Widget widget, MainModel model) {
+      return ButtonBar(
+        alignment: MainAxisAlignment.center,
+        children: <Widget>[
+          IconButton(
+            icon: Icon(Icons.info),
+            color: Theme.of(context).accentColor,
+            onPressed: () {
+              Navigator.pushNamed<bool>(
+                  context, '/products/' + model.allProducts[productIndex].id);
+            },
+          ),
+          IconButton(
+            icon: Icon(model.allProducts[productIndex].isFavourite
+                ? Icons.favorite
+                : Icons.favorite_border),
+            color: Colors.red,
+            onPressed: () {
+              model.selectProduct(model.allProducts[productIndex].id);
+              model.toggleProductFavouriteToggle();
+            },
+          ),
+        ],
+      );
+    });
   }
 
   @override

@@ -100,15 +100,15 @@ class ProductEditPageState extends State<ProductEditPage> {
                 onPressed: () => _submitForm(
                     model.addProduct,
                     model.updateProduct,
-                    model.setSelectedProductIndex,
-                    model.slectedProductIndex));
+                    model.setSelectedProductId,
+                    model.slectedProductId));
       }
     });
   }
 
   void _submitForm(
       Function addProduct, Function updateProduct, Function setSelectedProduct,
-      [int selectedProduct]) {
+      [String selectedProduct]) {
     if (!_formKey.currentState.validate()) {
       return;
     }
@@ -119,20 +119,19 @@ class ProductEditPageState extends State<ProductEditPage> {
         _formData['description'],
         _formData['image'],
         _formData['price'],
-      ).then((_){
-         Navigator.pushReplacementNamed(context, '/home')
-        .then((_) => setSelectedProduct(null));
+      ).then((_) {
+        Navigator.pushReplacementNamed(context, '/home')
+            .then((_) => setSelectedProduct(null));
       });
-        
-      
     } else {
       updateProduct(_formData['title'], _formData['description'],
-          _formData['image'], _formData['price']).then((_){
-         Navigator.pushReplacementNamed(context, '/home')
-        .then((_) => setSelectedProduct(null));
-      });;
+              _formData['image'], _formData['price'])
+          .then((_) {
+        Navigator.pushReplacementNamed(context, '/home')
+            .then((_) => setSelectedProduct(null));
+      });
+      ;
     }
-   
   }
 
   Widget _pagecontent(BuildContext context, Product product) {
@@ -169,14 +168,13 @@ class ProductEditPageState extends State<ProductEditPage> {
         builder: (BuildContext context, Widget widget, MainModel model) {
       {
         final Widget pageContent = _pagecontent(context, model.selectedProduct);
-        return (model.slectedProductIndex == null)
+        return (model.selectedProductIndex == -1)
             ? pageContent
             : Scaffold(
                 appBar: AppBar(
                   title: Text('Edit Item'),
                 ),
-                body: pageContent,
-              );
+                body: pageContent);
       }
     });
   }

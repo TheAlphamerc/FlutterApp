@@ -8,7 +8,7 @@ import 'dart:async';
 class ConnectedProductsModel extends Model {
   bool _isLoading = false;
   List<Product> _products = [];
-  int _selSelectedIndex;
+  String _selSelectedId;
   User _authenticatedUser;
   Future<Null> addProduct(
       String title, String description, String image, double price) {
@@ -58,15 +58,23 @@ class ProductsModel extends ConnectedProductsModel {
     return List.from(_products);
   }
 
-  int get slectedProductIndex {
-    return _selSelectedIndex;
+  int get selectedProductIndex {
+    return _products.indexWhere((x) {
+     return x.id == _selSelectedId;
+    });
+  }
+
+  String get slectedProductId {
+    return _selSelectedId;
   }
 
   Product get selectedProduct {
-    if (slectedProductIndex == null) {
+    if (_selSelectedId == null) {
       return null;
     }
-    return _products[slectedProductIndex];
+    return _products.firstWhere((x) {
+      return x.id == _selSelectedId;
+    });
   }
 
   bool get displayFavouriteOnly {
@@ -100,7 +108,8 @@ class ProductsModel extends ConnectedProductsModel {
           price: price,
           userEmail: selectedProduct.userEmail,
           userId: selectedProduct.userId);
-      _products[slectedProductIndex] = updatedProduct;
+
+      _products[selectedProductIndex] = updatedProduct;
       _isLoading = false;
       notifyListeners();
     });
@@ -109,8 +118,11 @@ class ProductsModel extends ConnectedProductsModel {
   void deleteProduct() {
     _isLoading = true;
     final deletedProductId = selectedProduct.id;
-    _products.removeAt(slectedProductIndex);
-    _selSelectedIndex = null;
+    final int selectedProductIndex = _products.indexWhere((x) {
+     return x.id == _selSelectedId;
+    });
+    _products.removeAt(selectedProductIndex);
+    _selSelectedId = null;
     notifyListeners();
     http
         .delete(
@@ -122,18 +134,20 @@ class ProductsModel extends ConnectedProductsModel {
     });
   }
 
-  void selectProduct(int index) {
-    _selSelectedIndex = index;
+  void selectProduct(String productId) {
+    _selSelectedId = productId;
+    notifyListeners();
   }
 
-  void setSelectedProductIndex(int index) {
-    _selSelectedIndex = index;
+  void setSelectedProductId(String productId) {
+    _selSelectedId = productId;
+    notifyListeners();
   }
 
   Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
-   return http
+    return http
         .get('https://flutter-app-32074.firebaseio.com/products.json')
         .then((http.Response response) {
       print(json.decode(response.body));
@@ -165,6 +179,7 @@ class ProductsModel extends ConnectedProductsModel {
     final bool isCurrentlyFavourite = selectedProduct.isFavourite;
     final bool newFavouriteStatus = !isCurrentlyFavourite;
     final Product updatedProduct = Product(
+        id: selectedProduct.id,
         description: selectedProduct.description,
         title: selectedProduct.title,
         image: selectedProduct.image,
@@ -172,7 +187,7 @@ class ProductsModel extends ConnectedProductsModel {
         isFavourite: newFavouriteStatus,
         userEmail: selectedProduct.userEmail,
         userId: selectedProduct.userId);
-    _products[slectedProductIndex] = updatedProduct;
+    _products[selectedProductIndex] = updatedProduct;
 
     notifyListeners();
   }
