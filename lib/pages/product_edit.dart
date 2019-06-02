@@ -19,7 +19,8 @@ class ProductEditPageState extends State<ProductEditPage> {
     'title': null,
     'description': null,
     'price': null,
-    'image': 'assets/food.jpg',
+    'image':
+        'https://www.google.com/imgres?imgurl=https%3A%2F%2Fhips.hearstapps.com%2Fdigitalspyuk.cdnds.net%2F16%2F38%2F1474456727-batman-ben-affleck.jpg%3Fcrop%3D1.00xw%3A0.893xh%3B0%2C0%26resize%3D480%3A*&imgrefurl=https%3A%2F%2Fwww.digitalspy.com%2Fmovies%2Fa27683260%2Fthe-batman-robert-pattinson-new-trilogy%2F&docid=3EiMkLUSLDPI-M&tbnid=IjM-TLCNOhOX4M%3A&vet=10ahUKEwjG-tS_usriAhXREHIKHQJHAb8QMwh7KAowCg..i&w=480&h=241&bih=549&biw=1280&q=batman&ved=0ahUKEwjG-tS_usriAhXREHIKHQJHAb8QMwh7KAowCg&iact=mrc&uact=8',
   };
   @override
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -91,11 +92,16 @@ class ProductEditPageState extends State<ProductEditPage> {
     return ScopedModelDescendant<MainModel>(
         builder: (BuildContext context, Widget widget, MainModel model) {
       {
-        return RaisedButton(
-            textColor: Colors.white,
-            child: Text('Save'),
-            onPressed: () => _submitForm(model.addProduct, model.updateProduct,
-                model.setSelectedProductIndex, model.slectedProductIndex));
+        return model.isLoading
+            ? Center(child: CircularProgressIndicator())
+            : RaisedButton(
+                textColor: Colors.white,
+                child: Text('Save'),
+                onPressed: () => _submitForm(
+                    model.addProduct,
+                    model.updateProduct,
+                    model.setSelectedProductIndex,
+                    model.slectedProductIndex));
       }
     });
   }
@@ -113,13 +119,17 @@ class ProductEditPageState extends State<ProductEditPage> {
         _formData['description'],
         _formData['image'],
         _formData['price'],
-      );
+      ).then((_){
+         Navigator.pushReplacementNamed(context, '/home')
+        .then((_) => setSelectedProduct(null));
+      });
+        
+      
     } else {
       updateProduct(_formData['title'], _formData['description'],
           _formData['image'], _formData['price']);
     }
-    Navigator.pushReplacementNamed(context, '/home')
-        .then((_) => setSelectedProduct(null));
+   
   }
 
   Widget _pagecontent(BuildContext context, Product product) {

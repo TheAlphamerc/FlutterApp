@@ -20,6 +20,22 @@ class _ProductsPageState extends State<ProductsPage> {
     widget.model.fetchProducts();
     super.initState();
   }
+
+  Widget _buildProductList() {
+    return ScopedModelDescendant(
+        builder: (BuildContext context, Widget widget, MainModel model) {
+      Widget content = Center(
+        child: Text("No data available"),
+      );
+      if (model.displayedproducts.length > 0 && !model.isLoading) {
+        content = ProductListView();
+      } else if (model.isLoading) {
+        content =Center(child: CircularProgressIndicator());
+      }
+      return content;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,7 +56,7 @@ class _ProductsPageState extends State<ProductsPage> {
           })
         ],
       ),
-      body: ProductListView(),
+      body: _buildProductList(),
     );
   }
 }

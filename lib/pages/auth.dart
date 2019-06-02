@@ -60,18 +60,17 @@ class _AuthPageState extends State<AuthPage> {
       textColor: Colors.white,
       child: Text("Login"),
       onPressed: () {
-       _submitForm(model.login);
+        _submitForm(model.login);
       },
     );
   }
 
-  void _submitForm(Function login){
+  void _submitForm(Function login) {
     if (!_formKey.currentState.validate()) {
       return;
-      
     }
     _formKey.currentState.save();
-    login(_formData['email'],_formData['password']);
+    login(_formData['email'], _formData['password']);
     Navigator.pushReplacementNamed(context, '/home');
   }
 
@@ -99,14 +98,11 @@ class _AuthPageState extends State<AuthPage> {
                         SizedBox(
                           height: 50,
                         ),
-                        ScopedModelDescendant(builder: (BuildContext context,Widget widget,MainModel model){
-                          return  _buildSubmitButton(model);
+                        ScopedModelDescendant(builder: (BuildContext context,
+                            Widget widget, MainModel model) {
+                          return _buildSubmitButton(model);
                         })
                       ],
-                    )
-                  )
-                )
-              )
-            );
+                    )))));
   }
 }
