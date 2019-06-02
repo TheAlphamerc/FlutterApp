@@ -48,6 +48,11 @@ class ConnectedProductsModel extends Model {
       _isLoading = false;
       notifyListeners();
       return true;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      cPrint('Exception occured in add product. ${error}');
+      return false;
     });
   }
 
@@ -131,6 +136,12 @@ class ProductsModel extends ConnectedProductsModel {
       _products[selectedProductIndex] = updatedProduct;
       _isLoading = false;
       notifyListeners();
+      return true;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      cPrint('Exception occured in update product. ${error}');
+      return false;
     });
   }
 
@@ -166,25 +177,25 @@ class ProductsModel extends ConnectedProductsModel {
     notifyListeners();
   }
 
-  Future<bool> fetchProducts() {
+  Future<Null> fetchProducts() {
     _isLoading = true;
     notifyListeners();
     return http
         .get('https://flutter-app-32074.firebaseio.com/products.json')
-        .then((http.Response response) {
+        .then<Null>((http.Response response) {
       cPrint('[Debug] Data fetched from api');
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint('Fetch api response error. Status code ${response.statusCode}');
         _isLoading = false;
         notifyListeners();
-        return false;
+        return;
       }
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
       if (productListData == null) {
         _isLoading = false;
         notifyListeners();
-        return false;
+        return;
       }
       productListData.forEach((String productId, dynamic productData) {
         final Product product = new Product(
@@ -201,6 +212,11 @@ class ProductsModel extends ConnectedProductsModel {
       _isLoading = false;
       notifyListeners();
       _selSelectedId = null;
+    }).catchError((error) {
+      _isLoading = false;
+      notifyListeners();
+      cPrint('Exception occured in fetch product. ${error}');
+      return;
     });
   }
 
