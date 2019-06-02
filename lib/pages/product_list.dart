@@ -6,19 +6,34 @@ import 'package:flutter_app/scoped_model/connected_product.dart';
 import 'package:flutter_app/scoped_model/main.dart';
 import 'package:scoped_model/scoped_model.dart';
 
-class ProductListPage extends StatelessWidget {
+class ProductListPage extends StatefulWidget {
+  final MainModel model;
+  ProductListPage(this.model);
+  @override
+  State<StatefulWidget> createState() {
+    return _ProductListPageState();
+  }
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+  @override
+  void initState() {
+    widget.model.fetchProducts();
+    super.initState();
+  }
+
   Widget _iconButton(BuildContext context, Product product,
-      Function updateProduct, int index,ProductsModel model) {
-    return  IconButton(
-          icon: Icon(Icons.edit),
-          onPressed: () {
-            model.setSelectedProductIndex(index);
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (BuildContext context) {
-              return ProductEditPage();
-            }));
-          });
-      }
+      Function updateProduct, int index, ProductsModel model) {
+    return IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          model.setSelectedProductIndex(index);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext context) {
+            return ProductEditPage();
+          }));
+        });
+  }
 
   Widget _icon(IconData icon) {
     return Container(
@@ -31,9 +46,13 @@ class ProductListPage extends StatelessWidget {
       color: Colors.red,
     );
   }
-  Widget _circleAvatar(String image){
-    return CircleAvatar(backgroundImage: NetworkImage(image),);
+
+  Widget _circleAvatar(String image) {
+    return CircleAvatar(
+      backgroundImage: NetworkImage(image),
+    );
   }
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MainModel>(
@@ -84,7 +103,7 @@ class ProductListPage extends StatelessWidget {
                       title: Text(_products[index].title),
                       subtitle: Text('\$ ${_products[index].price.toString()}'),
                       trailing: _iconButton(context, _products[index],
-                          model.updateProduct, index,model),
+                          model.updateProduct, index, model),
                     ),
                     Divider()
                   ],

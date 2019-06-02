@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
               // '/': (BuildContext context) => ProductsPage(_products),
               '/': (BuildContext context) => AuthPage(),
               '/admin': (BuildContext context) =>
-                  ProductAdminPage(),
+                  ProductAdminPage(model),
               '/home': (BuildContext context) => ProductsPage(model),
               '/login': (BuildContext context) => AuthPage(),
             },

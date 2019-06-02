@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/product_edit.dart';
 import 'package:flutter_app/pages/product_list.dart';
+import 'package:flutter_app/scoped_model/main.dart';
 import 'commonWidget/menu_Control.dart';
 
 class ProductAdminPage extends StatelessWidget {
-  
+  final MainModel model;
+  ProductAdminPage(this.model);
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       child: Scaffold(
-          drawer:MenuControlView(context),
+          drawer: MenuControlView(context),
           appBar: AppBar(
             title: Text("EasyList"),
             bottom: TabBar(
@@ -24,7 +27,7 @@ class ProductAdminPage extends StatelessWidget {
             ),
           ),
           body: TabBarView(
-            children: <Widget>[ProductEditPage(), ProductListPage()],
+            children: <Widget>[ProductEditPage(), ProductListPage(model)],
           )),
       length: 2,
     );
