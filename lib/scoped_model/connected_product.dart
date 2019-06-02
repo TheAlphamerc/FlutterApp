@@ -12,22 +12,22 @@ class ConnectedProductsModel extends Model {
   String _selSelectedId;
   User _authenticatedUser;
   Future<bool> addProduct(
-      String title, String description, String image, double price) {
-    _isLoading = true;
-    notifyListeners();
-    final Map<String, dynamic> productData = {
-      'title': title,
-      'description': description,
-      'image':
-          'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
-      'price': price,
-      'email': _authenticatedUser.email,
-      'userId': _authenticatedUser.id
-    };
-    return http
-        .post('https://flutter-app-32074.firebaseio.com/products.json',
-            body: jsonEncode(productData))
-        .then((http.Response response) {
+      String title, String description, String image, double price) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final Map<String, dynamic> productData = {
+        'title': title,
+        'description': description,
+        'image':
+            'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
+        'price': price,
+        'email': _authenticatedUser.email,
+        'userId': _authenticatedUser.id
+      };
+      final http.Response response = await http.post(
+          'https://flutter-app-32074.firebaseio.com/products.json',
+          body: jsonEncode(productData));
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint('[Error] add api response error');
         _isLoading = false;
@@ -48,15 +48,15 @@ class ConnectedProductsModel extends Model {
       _isLoading = false;
       notifyListeners();
       return true;
-    }).catchError((error) {
+    } catch (error) {
+      cPrint('[Exception] in add product. ${error}');
       _isLoading = false;
       notifyListeners();
-      cPrint('Exception occured in add product. ${error}');
       return false;
-    });
+    }
   }
 
-  void cPrint(String statement) {
+  void cPrint(statement) {
     debugPrint('[Debug] ${statement}');
   }
 }
@@ -99,23 +99,23 @@ class ProductsModel extends ConnectedProductsModel {
   }
 
   Future<bool> updateProduct(
-      String title, String description, String image, double price) {
-    _isLoading = true;
-    notifyListeners();
-    final Map<String, dynamic> productData = {
-      'title': title,
-      'description': description,
-      'image':
-          'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
-      'price': price,
-      'email': selectedProduct.userEmail,
-      'userId': selectedProduct.id
-    };
-    return http
-        .put(
-            'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json',
-            body: jsonEncode(productData))
-        .then((http.Response response) {
+      String title, String description, String image, double price) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final Map<String, dynamic> productData = {
+        'title': title,
+        'description': description,
+        'image':
+            'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
+        'price': price,
+        'email': selectedProduct.userEmail,
+        'userId': selectedProduct.id
+      };
+      final http.Response response = await http.put(
+          'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json',
+          body: jsonEncode(productData));
+
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint('[Error] update api response error');
         _isLoading = false;
@@ -137,31 +137,41 @@ class ProductsModel extends ConnectedProductsModel {
       _isLoading = false;
       notifyListeners();
       return true;
-    }).catchError((error) {
+    } catch (error) {
+      cPrint('[Exception] in update product. ${error}');
       _isLoading = false;
       notifyListeners();
-      cPrint('Exception occured in update product. ${error}');
       return false;
-    });
+    }
   }
 
-  void deleteProduct() {
-    _isLoading = true;
-    final deletedProductId = selectedProduct.id;
-    final int selectedProductIndex = _products.indexWhere((x) {
-      return x.id == _selSelectedId;
-    });
-    _products.removeAt(selectedProductIndex);
-    _selSelectedId = null;
-    notifyListeners();
-    http
-        .delete(
-      'https://flutter-app-32074.firebaseio.com/products/${deletedProductId}.json',
-    )
-        .then((http.Response response) {
+  void deleteProduct() async {
+    try {
+       _isLoading = true;
+      final deletedProductId = selectedProduct.id;
+      final int selectedProductIndex = _products.indexWhere((x) {
+        return x.id == _selSelectedId;
+      });
+      _products.removeAt(selectedProductIndex);
+      _selSelectedId = null;
+      notifyListeners();
+      final http.Response response = await http.delete(
+        'https://flutter-app-32074.firebaseio.com/products/${deletedProductId}.json',
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        cPrint('[Error] Delete api response error');
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      cPrint('Product deleted');
       _isLoading = false;
       notifyListeners();
-    });
+    } catch (error) {
+     _isLoading = false;
+        notifyListeners();
+        return;
+    }
   }
 
   void selectProduct(String productId) {
@@ -177,13 +187,14 @@ class ProductsModel extends ConnectedProductsModel {
     notifyListeners();
   }
 
-  Future<Null> fetchProducts() {
-    _isLoading = true;
-    notifyListeners();
-    return http
-        .get('https://flutter-app-32074.firebaseio.com/products.json')
-        .then<Null>((http.Response response) {
-      cPrint('[Debug] Data fetched from api');
+  Future<Null> fetchProducts() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final http.Response response = await http
+          .get('https://flutter-app-32074.firebaseio.com/products.json');
+
+      cPrint('Data fetched from api');
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint('Fetch api response error. Status code ${response.statusCode}');
         _isLoading = false;
@@ -212,12 +223,11 @@ class ProductsModel extends ConnectedProductsModel {
       _isLoading = false;
       notifyListeners();
       _selSelectedId = null;
-    }).catchError((error) {
+    } catch (error) {
+      cPrint('[Exception] in add product. ${error}');
       _isLoading = false;
       notifyListeners();
-      cPrint('Exception occured in fetch product. ${error}');
-      return;
-    });
+    }
   }
 
   void toggleProductFavouriteToggle() {

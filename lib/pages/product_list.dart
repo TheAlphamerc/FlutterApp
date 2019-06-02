@@ -75,25 +75,30 @@ class _ProductListPageState extends State<ProductListPage> {
                       ],
                     )),
                 onDismissed: (DismissDirection direction) {
-                  switch (direction) {
-                    case DismissDirection.endToStart:
-                      {
-                        model.selectProduct(model.allProducts[index].id);
-                        model.deleteProduct();
+                  try {
+                    switch (direction) {
+                      case DismissDirection.endToStart:
+                        {
+                          model.selectProduct(model.allProducts[index].id);
+                          model.deleteProduct();
+                          break;
+                        }
+                      case DismissDirection.startToEnd:
+                        {
+                          model.selectProduct(model.allProducts[index].id);
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (BuildContext context) {
+                            return ProductEditPage();
+                          }));
+                          //updateProduct(index);
+                          break;
+                        }
+                      default:
                         break;
-                      }
-                    case DismissDirection.startToEnd:
-                      {
-                        model.selectProduct(model.allProducts[index].id);
-                        Navigator.of(context).push(
-                            MaterialPageRoute(builder: (BuildContext context) {
-                          return ProductEditPage();
-                        }));
-                        //updateProduct(index);
-                        break;
-                      }
-                    default:
-                      break;
+                    }
+                  } catch (error) {
+                    model.cPrint(
+                        '[Exception] on productListPage >> Buid widget .${error}');
                   }
                 },
                 child: Column(

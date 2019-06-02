@@ -142,6 +142,7 @@ class ProductEditPageState extends State<ProductEditPage> {
               builder: (BuildContext context) {
                 return _showAlert();
               });
+          return;
         }
         print('[Debug] Navigate to home page');
         Navigator.pushReplacementNamed(context, '/home').then((_) {
