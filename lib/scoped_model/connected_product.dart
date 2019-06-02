@@ -11,6 +11,49 @@ class ConnectedProductsModel extends Model {
   List<Product> _products = [];
   String _selSelectedId;
   User _authenticatedUser;
+
+  void cPrint(statement) {
+    debugPrint('[Debug] ${statement}');
+  }
+}
+
+class ProductsModel extends ConnectedProductsModel {
+  bool _showFavourite = false;
+
+  List<Product> get allProducts {
+    return List.from(_products);
+  }
+
+  List<Product> get displayedproducts {
+    if (_showFavourite) {
+      return _products.where((x) => x.isFavourite == true).toList();
+    }
+    return List.from(_products);
+  }
+
+  int get selectedProductIndex {
+    return _products.indexWhere((x) {
+      return x.id == _selSelectedId;
+    });
+  }
+
+  String get slectedProductId {
+    return _selSelectedId;
+  }
+
+  Product get selectedProduct {
+    if (_selSelectedId == null) {
+      return null;
+    }
+    return _products.firstWhere((x) {
+      return x.id == _selSelectedId;
+    });
+  }
+
+  bool get displayFavouriteOnly {
+    return _showFavourite;
+  }
+
   Future<bool> addProduct(
       String title, String description, String image, double price) async {
     try {
@@ -54,48 +97,6 @@ class ConnectedProductsModel extends Model {
       notifyListeners();
       return false;
     }
-  }
-
-  void cPrint(statement) {
-    debugPrint('[Debug] ${statement}');
-  }
-}
-
-class ProductsModel extends ConnectedProductsModel {
-  bool _showFavourite = false;
-
-  List<Product> get allProducts {
-    return List.from(_products);
-  }
-
-  List<Product> get displayedproducts {
-    if (_showFavourite) {
-      return _products.where((x) => x.isFavourite == true).toList();
-    }
-    return List.from(_products);
-  }
-
-  int get selectedProductIndex {
-    return _products.indexWhere((x) {
-      return x.id == _selSelectedId;
-    });
-  }
-
-  String get slectedProductId {
-    return _selSelectedId;
-  }
-
-  Product get selectedProduct {
-    if (_selSelectedId == null) {
-      return null;
-    }
-    return _products.firstWhere((x) {
-      return x.id == _selSelectedId;
-    });
-  }
-
-  bool get displayFavouriteOnly {
-    return _showFavourite;
   }
 
   Future<bool> updateProduct(
@@ -147,7 +148,7 @@ class ProductsModel extends ConnectedProductsModel {
 
   void deleteProduct() async {
     try {
-       _isLoading = true;
+      _isLoading = true;
       final deletedProductId = selectedProduct.id;
       final int selectedProductIndex = _products.indexWhere((x) {
         return x.id == _selSelectedId;
@@ -168,9 +169,9 @@ class ProductsModel extends ConnectedProductsModel {
       _isLoading = false;
       notifyListeners();
     } catch (error) {
-     _isLoading = false;
-        notifyListeners();
-        return;
+      _isLoading = false;
+      notifyListeners();
+      return;
     }
   }
 
