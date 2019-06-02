@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -10,7 +11,7 @@ class ConnectedProductsModel extends Model {
   List<Product> _products = [];
   String _selSelectedId;
   User _authenticatedUser;
-  Future<Null> addProduct(
+  Future<bool> addProduct(
       String title, String description, String image, double price) {
     _isLoading = true;
     notifyListeners();
@@ -27,8 +28,14 @@ class ConnectedProductsModel extends Model {
         .post('https://flutter-app-32074.firebaseio.com/products.json',
             body: jsonEncode(productData))
         .then((http.Response response) {
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        cPrint('[Error] add api response error');
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
       final Map<String, dynamic> responseData = json.decode(response.body);
-      print('[Debug] New product added');
+      cPrint('New product added');
       final Product product = new Product(
           id: responseData['name'],
           description: description,
@@ -40,7 +47,12 @@ class ConnectedProductsModel extends Model {
       _products.add(product);
       _isLoading = false;
       notifyListeners();
+      return true;
     });
+  }
+
+  void cPrint(String statement) {
+    debugPrint('[Debug] ${statement}');
   }
 }
 
@@ -81,7 +93,7 @@ class ProductsModel extends ConnectedProductsModel {
     return _showFavourite;
   }
 
-  Future<Null> updateProduct(
+  Future<bool> updateProduct(
       String title, String description, String image, double price) {
     _isLoading = true;
     notifyListeners();
@@ -99,7 +111,13 @@ class ProductsModel extends ConnectedProductsModel {
             'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json',
             body: jsonEncode(productData))
         .then((http.Response response) {
-      print('[Debug] Product updated');
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        cPrint('[Error] update api response error');
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+      cPrint('Product updated');
       final Product updatedProduct = new Product(
           id: selectedProduct.id,
           description: description,
@@ -142,26 +160,31 @@ class ProductsModel extends ConnectedProductsModel {
 
   void setSelectedProductId(String productId) {
     if (productId == null) {
-      print("[Debug] setSelectedProductId is set null");
+      cPrint("setSelectedProductId is set null");
     }
     _selSelectedId = productId;
     notifyListeners();
   }
 
-  Future<Null> fetchProducts() {
+  Future<bool> fetchProducts() {
     _isLoading = true;
     notifyListeners();
     return http
         .get('https://flutter-app-32074.firebaseio.com/products.json')
         .then((http.Response response) {
-      print('[Debug] Data fetched from api');
+      cPrint('[Debug] Data fetched from api');
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        cPrint('Fetch api response error. Status code ${response.statusCode}');
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
       if (productListData == null) {
         _isLoading = false;
         notifyListeners();
-
-        return;
+        return false;
       }
       productListData.forEach((String productId, dynamic productData) {
         final Product product = new Product(

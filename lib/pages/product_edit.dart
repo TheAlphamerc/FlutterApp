@@ -88,6 +88,25 @@ class ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
+  Future _showAlert(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Something went wrong'),
+            content: Text('Please try after some time'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Okay'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
   Widget _buildRaisedButton() {
     return ScopedModelDescendant<MainModel>(
         builder: (BuildContext context, Widget widget, MainModel model) {
@@ -120,7 +139,11 @@ class ProductEditPageState extends State<ProductEditPage> {
         _formData['description'],
         _formData['image'],
         _formData['price'],
-      ).then((_) {
+      ).then((bool isOk) {
+        if (!isOk) {
+          _showAlert(context);
+          return;
+        }
         print('[Debug] Navigate to home page');
         Navigator.pushReplacementNamed(context, '/home').then((_) {
           print('[Debug] Set selected product to null');
@@ -131,7 +154,11 @@ class ProductEditPageState extends State<ProductEditPage> {
       print('[Debug] Form is ready in Edit  form');
       updateProduct(_formData['title'], _formData['description'],
               _formData['image'], _formData['price'])
-          .then((_) {
+          .then((bool isOk) {
+        if (!isOk) {
+          _showAlert(context);
+          return;
+        }
         print('[Debug] Navigate to home page');
         Navigator.pushReplacementNamed(context, '/home').then((_) {
           print('[Debug] Set selected product to null');
