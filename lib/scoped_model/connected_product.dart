@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_app/models/auth.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -256,11 +257,9 @@ class ProductsModel extends ConnectedProductsModel {
 }
 
 class UserModel extends ConnectedProductsModel {
-  void login(String email1, String password) {
-    _authenticatedUser = User(id: 'sdc', email: email1, password: password);
-  }
-
-  Future<Map<String, dynamic>> signUp(String email, String password) async {
+  Future<Map<String, dynamic>> authenticate(String email, String password,
+      [AuthMode authMode = AuthMode.Login]) async {
+    _authenticatedUser = User(id: 'SAS', email: email, password: password);
     try {
       final Map<String, dynamic> _authData = {
         'email': email,
@@ -269,10 +268,19 @@ class UserModel extends ConnectedProductsModel {
       };
       _isLoading = true;
       notifyListeners();
-      final http.Response response = await http.post(
-          'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAjc3XJO1612qcK0XOfmB5DrWGA1fb_lh8',
-          body: json.encode(_authData),
-          headers: {'content-Type': 'appliation/json'});
+      http.Response response;
+      if (authMode == AuthMode.Login) {
+        response = await http.post(
+            'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyAjc3XJO1612qcK0XOfmB5DrWGA1fb_lh8',
+            body: json.encode(_authData),
+            headers: {'content-Type': 'appliation/json'});
+      } else {
+        response = await http.post(
+            'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAjc3XJO1612qcK0XOfmB5DrWGA1fb_lh8',
+            body: json.encode(_authData),
+            headers: {'content-Type': 'appliation/json'});
+      }
+
       final Map<String, dynamic> responseData = json.decode(response.body);
       bool hasError = true;
       String message = 'Something went wrong';
@@ -281,9 +289,20 @@ class UserModel extends ConnectedProductsModel {
         message = 'Authentication succeeded';
         cPrint(message);
       } else if (responseData.containsKey('error')) {
-        if (responseData['error']['message'] == "EMAIL_EXISTS") {
+        if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
+          message = 'Email not found';
+          cPrint(message);
+        } else if (responseData['error']['message'] == "INVALID_EMAIL") {
+          message = 'Invalid email';
+          cPrint(message);
+        } else if (responseData['error']['message'] == "EMAIL_EXISTS") {
           message = 'This email is already exists';
           cPrint(message);
+        } else if (responseData['error']['message'] == "INVALID_PASSWORD") {
+          message = 'Invalid password';
+          cPrint(message);
+        } else {
+          cPrint(responseData);
         }
       } else {
         cPrint(responseData);
