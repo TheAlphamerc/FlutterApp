@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -257,6 +258,45 @@ class ProductsModel extends ConnectedProductsModel {
 class UserModel extends ConnectedProductsModel {
   void login(String email1, String password) {
     _authenticatedUser = User(id: 'sdc', email: email1, password: password);
+  }
+
+  Future<Map<String, dynamic>> signUp(String email, String password) async {
+    try {
+      final Map<String, dynamic> _authData = {
+        'email': email,
+        'password': password,
+        'returnSecureToken': true
+      };
+      _isLoading = true;
+      notifyListeners();
+      final http.Response response = await http.post(
+          'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyAjc3XJO1612qcK0XOfmB5DrWGA1fb_lh8',
+          body: json.encode(_authData),
+          headers: {'content-Type': 'appliation/json'});
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      bool hasError = true;
+      String message = 'Something went wrong';
+      if (responseData.containsKey('idToken')) {
+        hasError = false;
+        message = 'Authentication succeeded';
+        cPrint(message);
+      } else if (responseData.containsKey('error')) {
+        if (responseData['error']['message'] == "EMAIL_EXISTS") {
+          message = 'This email is already exists';
+          cPrint(message);
+        }
+      } else {
+        cPrint(responseData);
+      }
+      _isLoading = false;
+      notifyListeners();
+      return {'success': !hasError, "message": message};
+    } catch (error) {
+      cPrint('[Exception] in signup. ${error}');
+      _isLoading = false;
+      notifyListeners();
+      return {'success': false, "message": "Authentication failed!"};
+    }
   }
 }
 

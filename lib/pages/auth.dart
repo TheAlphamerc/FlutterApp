@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/scoped_model/main.dart';
 import 'package:scoped_model/scoped_model.dart';
+
+enum AuthMode { Signup, Login }
 
 class AuthPage extends StatefulWidget {
   @override
@@ -12,14 +13,18 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   bool acceptTermsValue = true;
+  AuthMode _authMode = AuthMode.Login;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _passwordTextController =
+      new TextEditingController();
   final Map<String, dynamic> _formData = {'email': null, 'password': null};
   Widget _buildEmail() {
     return TextFormField(
       decoration: InputDecoration(labelText: 'Email', icon: Icon(Icons.email)),
+      keyboardType: TextInputType.emailAddress,
       validator: (String value) {
         if (value.isEmpty || value.length < 5) {
-          return "Desription is required and +5 character long";
+          return "Email is required and +5 character long";
         }
       },
       onSaved: (value) {
@@ -32,14 +37,30 @@ class _AuthPageState extends State<AuthPage> {
     return TextFormField(
       decoration: InputDecoration(
           labelText: 'Password', icon: Icon(Icons.enhanced_encryption)),
+      controller: _passwordTextController,
+      obscureText: true,
       validator: (String value) {
         if (value.isEmpty || value.length < 5) {
           return "Password is should be alphanumeric";
         }
       },
       onSaved: (value) {
-        _formData['email'] = value;
+        _formData['password'] = value;
       },
+    );
+  }
+
+  Widget _buildConfirmPassword() {
+    return TextFormField(
+      decoration: InputDecoration(
+          labelText: 'Confirm password', icon: Icon(Icons.enhanced_encryption)),
+      obscureText: true,
+      validator: (String value) {
+        if (_passwordTextController.text != value) {
+          return "Password do not match";
+        }
+      },
+      onSaved: (value) {},
     );
   }
 
@@ -56,29 +77,59 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Widget _buildSubmitButton(MainModel model) {
-    return RaisedButton(
-      textColor: Colors.white,
-      child: Text("Login"),
-      onPressed: () {
-        _submitForm(model.login);
-      },
-    );
+    return model.isLoading
+        ? CircularProgressIndicator()
+        : RaisedButton(
+            textColor: Colors.white,
+            child: Text("Login"),
+            onPressed: () {
+              _submitForm(model.login, model.signUp);
+            },
+          );
   }
 
-  void _submitForm(Function login) {
-    if (!_formKey.currentState.validate()) {
-      return;
+  void _submitForm(Function login, Function signup) async {
+    try {
+      if (!_formKey.currentState.validate()) {
+        return;
+      }
+      _formKey.currentState.save();
+      if (_authMode == AuthMode.Login) {
+        login(_formData['email'], _formData['password']);
+      } else {
+        final Map<String, dynamic> response =
+            await signup(_formData['email'], _formData['password']);
+        if (response['success']) {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Alert'),
+                  content: Text(response['message']),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('Okay'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
+              });
+        }
+      }
+    } catch (error) {
+      print(error);
     }
-    _formKey.currentState.save();
-    login(_formData['email'], _formData['password']);
-    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550 ? 400 : deviceWidth * .9;
-    final double devicePadding = deviceWidth - targetWidth;
+    // final double devicePadding = deviceWidth - targetWidth;
     return Scaffold(
         appBar: AppBar(
           title: Text("Login"),
@@ -86,23 +137,39 @@ class _AuthPageState extends State<AuthPage> {
         body: Container(
             padding: EdgeInsets.symmetric(horizontal: 30),
             child: Center(
-                child: Form(
-                    key: _formKey,
-                    child: ListView(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: devicePadding / 2),
-                      children: <Widget>[
-                        _buildEmail(),
-                        _buildPassword(),
-                        _buildSwitch(),
-                        SizedBox(
-                          height: 50,
-                        ),
-                        ScopedModelDescendant(builder: (BuildContext context,
-                            Widget widget, MainModel model) {
-                          return _buildSubmitButton(model);
-                        })
-                      ],
-                    )))));
+                child: SingleChildScrollView(
+                    child: Container(
+                        width: targetWidth,
+                        child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: <Widget>[
+                                _buildEmail(),
+                                _buildPassword(),
+                                _authMode == AuthMode.Signup
+                                    ? _buildConfirmPassword()
+                                    : Container(),
+                                _buildSwitch(),
+                                SizedBox(
+                                  height: 50,
+                                ),
+                                FlatButton(
+                                  child: Text(
+                                      '${_authMode == AuthMode.Login ? 'SignUp' : 'SignIn'}'),
+                                  onPressed: () {
+                                    setState(() {
+                                      _authMode = _authMode == AuthMode.Login
+                                          ? AuthMode.Signup
+                                          : AuthMode.Login;
+                                    });
+                                  },
+                                ),
+                                ScopedModelDescendant(builder:
+                                    (BuildContext context, Widget widget,
+                                        MainModel model) {
+                                  return _buildSubmitButton(model);
+                                })
+                              ],
+                            )))))));
   }
 }
