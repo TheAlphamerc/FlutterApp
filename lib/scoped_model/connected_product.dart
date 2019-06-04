@@ -71,7 +71,7 @@ class ProductsModel extends ConnectedProductsModel {
         'userId': _authenticatedUser.id
       };
       final http.Response response = await http.post(
-          'https://flutter-app-32074.firebaseio.com/products.json',
+          'https://flutter-app-32074.firebaseio.com/products.json?auth=${_authenticatedUser.token}',
           body: jsonEncode(productData));
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint('[Error] add api response error');
@@ -116,7 +116,7 @@ class ProductsModel extends ConnectedProductsModel {
         'userId': selectedProduct.id
       };
       final http.Response response = await http.put(
-          'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json',
+          'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
           body: jsonEncode(productData));
 
       if (response.statusCode != 200 && response.statusCode != 201) {
@@ -159,7 +159,7 @@ class ProductsModel extends ConnectedProductsModel {
       _selSelectedId = null;
       notifyListeners();
       final http.Response response = await http.delete(
-        'https://flutter-app-32074.firebaseio.com/products/${deletedProductId}.json',
+        'https://flutter-app-32074.firebaseio.com/products/${deletedProductId}.json?auth=${_authenticatedUser.token}',
       );
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint('[Error] Delete api response error');
@@ -194,12 +194,13 @@ class ProductsModel extends ConnectedProductsModel {
     try {
       _isLoading = true;
       notifyListeners();
-      final http.Response response = await http
-          .get('https://flutter-app-32074.firebaseio.com/products.json');
+      final http.Response response = await http.get(
+          'https://flutter-app-32074.firebaseio.com/products.json?auth=${_authenticatedUser.token}');
 
       cPrint('Data fetched from api');
       if (response.statusCode != 200 && response.statusCode != 201) {
-        cPrint('Fetch api response error. Status code ${response.statusCode}');
+        cPrint(
+            'Fetch api response error. Status code:${response.statusCode} response: ${response.body}');
         _isLoading = false;
         notifyListeners();
         return;
@@ -259,7 +260,6 @@ class ProductsModel extends ConnectedProductsModel {
 class UserModel extends ConnectedProductsModel {
   Future<Map<String, dynamic>> authenticate(String email, String password,
       [AuthMode authMode = AuthMode.Login]) async {
-    _authenticatedUser = User(id: 'SAS', email: email, password: password);
     try {
       final Map<String, dynamic> _authData = {
         'email': email,
@@ -287,6 +287,10 @@ class UserModel extends ConnectedProductsModel {
       if (responseData.containsKey('idToken')) {
         hasError = false;
         message = 'Authentication succeeded';
+        _authenticatedUser = User(
+            id: responseData['localid'],
+            email: email,
+            token: responseData['idToken']);
         cPrint(message);
       } else if (responseData.containsKey('error')) {
         if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
