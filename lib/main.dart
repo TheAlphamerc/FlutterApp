@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
   final MainModel _model = new MainModel();
   @override
   void initState() {
-    // TODO: implement initState
+    _model.autoAuthenticated();
     super.initState();
   }
 
@@ -43,7 +43,12 @@ class _MyAppState extends State<MyApp> {
             // home: AuthPage(),
             routes: {
               // '/': (BuildContext context) => ProductsPage(_products),
-              '/': (BuildContext context) => AuthPage(),
+              '/': (BuildContext context) => ScopedModelDescendant(builder:
+                      (BuildContext context, Widget widget, MainModel model) {
+                    return model.user == null
+                        ? AuthPage()
+                        : ProductsPage(_model);
+                  }),
               '/admin': (BuildContext context) => ProductAdminPage(_model),
               '/home': (BuildContext context) => ProductsPage(_model),
               '/login': (BuildContext context) => AuthPage(),
@@ -67,5 +72,4 @@ class _MyAppState extends State<MyApp> {
                   builder: (BuildContext context) => ProductsPage(_model));
             }));
   }
-  
 }

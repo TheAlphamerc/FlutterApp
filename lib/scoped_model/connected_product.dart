@@ -259,14 +259,20 @@ class ProductsModel extends ConnectedProductsModel {
 }
 
 class UserModel extends ConnectedProductsModel {
+  User get user {
+    return _authenticatedUser;
+  }
 
-    void autoAuthenticated() async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      final String token = prefs.getString('token');
-      if(token != null){
+  void autoAuthenticated() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String token = prefs.getString('token');
+    final String userEmial = prefs.getString('userEmial');
+    final String userId = prefs.getString('userId');
+    _authenticatedUser = new User(email: userEmial, id: userId, token: token);
+    notifyListeners();
+    if (token != null) {}
+  }
 
-      }
-    }
   Future<Map<String, dynamic>> authenticate(String email, String password,
       [AuthMode authMode = AuthMode.Login]) async {
     try {
@@ -303,7 +309,9 @@ class UserModel extends ConnectedProductsModel {
         cPrint(message);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', _authenticatedUser.token);
-       await autoAuthenticated();
+        await prefs.setString('userEmail', _authenticatedUser.email);
+        await prefs.setString('userID', _authenticatedUser.id);
+        await autoAuthenticated();
       } else if (responseData.containsKey('error')) {
         if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
           message = 'Email not found';
