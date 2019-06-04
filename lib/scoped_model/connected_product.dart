@@ -7,6 +7,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectedProductsModel extends Model {
   bool _isLoading = false;
@@ -258,6 +259,14 @@ class ProductsModel extends ConnectedProductsModel {
 }
 
 class UserModel extends ConnectedProductsModel {
+
+    void autoAuthenticated() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String token = prefs.getString('token');
+      if(token != null){
+
+      }
+    }
   Future<Map<String, dynamic>> authenticate(String email, String password,
       [AuthMode authMode = AuthMode.Login]) async {
     try {
@@ -292,6 +301,9 @@ class UserModel extends ConnectedProductsModel {
             email: email,
             token: responseData['idToken']);
         cPrint(message);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', _authenticatedUser.token);
+       await autoAuthenticated();
       } else if (responseData.containsKey('error')) {
         if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
           message = 'Email not found';
