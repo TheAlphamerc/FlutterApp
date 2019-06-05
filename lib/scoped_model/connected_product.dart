@@ -192,7 +192,7 @@ class ProductsModel extends ConnectedProductsModel {
     notifyListeners();
   }
 
-  Future<Null> fetchProducts() async {
+  Future<Null> fetchProducts({onlyForUser = false}) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -222,17 +222,22 @@ class ProductsModel extends ConnectedProductsModel {
             price: productData['price'],
             image: productData['image'],
             userEmail: productData['email'],
-            userId: productData['UserId'],
-            isFavourite: productData['wishlistUsers'] == null ? false :(productData['wishlistUsers'] as Map<String, dynamic>)
-                .containsKey(_authenticatedUser.id));
+            userId: productData['userId'],
+            isFavourite: productData['wishlistUsers'] == null
+                ? false
+                : (productData['wishlistUsers'] as Map<String, dynamic>)
+                    .containsKey(_authenticatedUser.id));
         fetchedProductList.add(product);
       });
-      _products = fetchedProductList;
+      _products = fetchedProductList.where((Product x) {
+       return x.userId == _authenticatedUser.id;
+      }).toList();
+
       _isLoading = false;
       notifyListeners();
       _selSelectedId = null;
     } catch (error) {
-      cPrint('[Exception] in add product. ${error}');
+      cPrint('[Exception] in add product. ${error} ${_authenticatedUser.id}');
       _isLoading = false;
       notifyListeners();
     }
