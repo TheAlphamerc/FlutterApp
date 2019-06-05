@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rxdart/rxdart.dart';
 
 class ConnectedProductsModel extends Model {
   bool _isLoading = false;
@@ -16,7 +17,7 @@ class ConnectedProductsModel extends Model {
   User _authenticatedUser;
 
   void cPrint(statement) {
-    debugPrint('[Debug] ${statement}');
+    debugPrint('${DateTime.now()}[Debug] ${statement}');
   }
 }
 
@@ -221,7 +222,9 @@ class ProductsModel extends ConnectedProductsModel {
             price: productData['price'],
             image: productData['image'],
             userEmail: productData['email'],
-            userId: productData['UserId']);
+            userId: productData['UserId'],
+            isFavourite: productData['wishlistUsers'] == null ? false :(productData['wishlistUsers'] as Map<String, dynamic>)
+                .containsKey(_authenticatedUser.id));
         fetchedProductList.add(product);
       });
       _products = fetchedProductList;
@@ -235,7 +238,7 @@ class ProductsModel extends ConnectedProductsModel {
     }
   }
 
-  void toggleProductFavouriteToggle() {
+  void toggleProductFavouriteToggle() async {
     final bool isCurrentlyFavourite = selectedProduct.isFavourite;
     final bool newFavouriteStatus = !isCurrentlyFavourite;
     final Product updatedProduct = Product(
@@ -248,6 +251,58 @@ class ProductsModel extends ConnectedProductsModel {
         userEmail: selectedProduct.userEmail,
         userId: selectedProduct.userId);
     _products[selectedProductIndex] = updatedProduct;
+    http.Response response;
+    if (newFavouriteStatus) {
+      response = await http.put(
+          'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}/wishlistUsers/${_authenticatedUser.id}.json?auth=${_authenticatedUser.token}',
+          body: json.encode(true));
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        final Product updatedProduct = Product(
+            id: selectedProduct.id,
+            description: selectedProduct.description,
+            title: selectedProduct.title,
+            image: selectedProduct.image,
+            price: selectedProduct.price,
+            isFavourite: !newFavouriteStatus,
+            userEmail: selectedProduct.userEmail,
+            userId: selectedProduct.userId);
+        _products[selectedProductIndex] = updatedProduct;
+
+        cPrint(
+            'Fsvourite product add  api response error. Status code:${response.statusCode} response: ${response.body}');
+        _isLoading = false;
+        notifyListeners();
+        return;
+      } else {
+        cPrint('User id ${_authenticatedUser.id}');
+        cPrint(
+            'Fsvourite product add  successfull. Status code:${response.statusCode} response: ${response.body}');
+      }
+    } else {
+      response = await http.delete(
+          'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}/wishlistUsers/${_authenticatedUser.id}.json?auth=${_authenticatedUser.token}');
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        final Product updatedProduct = Product(
+            id: selectedProduct.id,
+            description: selectedProduct.description,
+            title: selectedProduct.title,
+            image: selectedProduct.image,
+            price: selectedProduct.price,
+            isFavourite: !newFavouriteStatus,
+            userEmail: selectedProduct.userEmail,
+            userId: selectedProduct.userId);
+        _products[selectedProductIndex] = updatedProduct;
+        cPrint(
+            'Fsvourite product remove updated api response error. Status code:${response.statusCode} response: ${response.body}');
+        _isLoading = false;
+        notifyListeners();
+        return;
+      } else {
+        cPrint(
+            'Fsvourite product remove  successfull. Status code:${response.statusCode} response: ${response.body}');
+      }
+    }
 
     notifyListeners();
   }
@@ -260,8 +315,13 @@ class ProductsModel extends ConnectedProductsModel {
 
 class UserModel extends ConnectedProductsModel {
   Timer _authTimer;
+  PublishSubject<bool> _userSubject = PublishSubject();
   User get user {
     return _authenticatedUser;
+  }
+
+  PublishSubject<bool> get userSubject {
+    return _userSubject;
   }
 
   void autoAuthenticated() async {
@@ -273,6 +333,7 @@ class UserModel extends ConnectedProductsModel {
       final parseExpiryTime = DateTime.parse(expirtTimeString);
       if (parseExpiryTime.isBefore(now)) {
         _authenticatedUser = null;
+        cPrint("Session Expire");
         notifyListeners();
         return;
       }
@@ -281,6 +342,8 @@ class UserModel extends ConnectedProductsModel {
       final tokenLifeSpan = parseExpiryTime.difference(now).inSeconds;
       setAuthTimeOut(tokenLifeSpan);
       _authenticatedUser = new User(email: userEmail, id: userId, token: token);
+      cPrint("Auto login. UserId : ${userId}");
+      _userSubject.add(true);
       notifyListeners();
     }
   }
@@ -290,13 +353,14 @@ class UserModel extends ConnectedProductsModel {
     await prefs.remove("token");
     await prefs.remove("userEmail");
     await prefs.remove("userId");
-    _authTimer.cancel();
     print('Logout');
+    _authTimer.cancel();
+    _userSubject.add(false);
   }
 
   void setAuthTimeOut(int time) {
     cPrint("Time Remaining for auto logout ${time}");
-    _authTimer = Timer(Duration(milliseconds: time), logout);
+    _authTimer = Timer(Duration(seconds: time), logout);
   }
 
   Future<Map<String, dynamic>> authenticate(String email, String password,
@@ -329,10 +393,12 @@ class UserModel extends ConnectedProductsModel {
         hasError = false;
         message = 'Authentication succeeded';
         _authenticatedUser = User(
-            id: responseData['localid'],
+            id: responseData['localId'],
             email: email,
             token: responseData['idToken']);
+        cPrint('UserId = ${_authenticatedUser.id}');
         setAuthTimeOut(int.parse(responseData['expiresIn']));
+        _userSubject.add(true);
         final now = DateTime.now();
         final expiryTime =
             now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
@@ -340,7 +406,7 @@ class UserModel extends ConnectedProductsModel {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', _authenticatedUser.token);
         await prefs.setString('userEmail', _authenticatedUser.email);
-        await prefs.setString('userID', _authenticatedUser.id);
+        await prefs.setString('userId', _authenticatedUser.id);
         await prefs.setString('expiryTime', expiryTime.toIso8601String());
         await autoAuthenticated();
       } else if (responseData.containsKey('error')) {

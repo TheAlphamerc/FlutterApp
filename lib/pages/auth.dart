@@ -97,7 +97,7 @@ class _AuthPageState extends State<AuthPage> {
       final Map<String, dynamic> response = await authenticate(
           _formData['email'], _formData['password'], _authMode);
       if (response['success']) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/');
       } else {
         showDialog(
             context: context,

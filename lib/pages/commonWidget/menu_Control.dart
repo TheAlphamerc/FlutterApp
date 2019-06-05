@@ -27,7 +27,7 @@ class MenuControlView extends StatelessWidget {
           leading: Icon(Icons.shop),
           title: Text('Home page'),
           onTap: () {
-            Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, '/');
           },
         ),
         Divider(),
