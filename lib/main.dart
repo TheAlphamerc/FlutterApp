@@ -43,12 +43,9 @@ class _MyAppState extends State<MyApp> {
             // home: AuthPage(),
             routes: {
               // '/': (BuildContext context) => ProductsPage(_products),
-              '/': (BuildContext context) => ScopedModelDescendant(builder:
-                      (BuildContext context, Widget widget, MainModel model) {
-                    return model.user == null
-                        ? AuthPage()
-                        : ProductsPage(_model);
-                  }),
+              '/': (BuildContext context) =>
+                  _model.user == null ? AuthPage() : ProductsPage(_model),
+
               '/admin': (BuildContext context) => ProductAdminPage(_model),
               '/home': (BuildContext context) => ProductsPage(_model),
               '/login': (BuildContext context) => AuthPage(),

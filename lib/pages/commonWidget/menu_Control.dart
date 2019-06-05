@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/scoped_model/main.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class MenuControlView extends StatelessWidget {
   BuildContext context;
@@ -28,12 +30,18 @@ class MenuControlView extends StatelessWidget {
             Navigator.pushReplacementNamed(context, '/home');
           },
         ),
-        // ListTile(
-        //   title: Text('Login'),
-        //   onTap: () {
-        //     Navigator.pushReplacementNamed(context, '/login');
-        //   },
-        // )
+        Divider(),
+        ScopedModelDescendant(
+            builder: (BuildContext context, Widget widget, MainModel model) {
+          return ListTile(
+            leading: Icon(Icons.exit_to_app),
+            title: Text('Logout'),
+            onTap: () {
+              model.logout();
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+          );
+        })
       ],
     ));
   }

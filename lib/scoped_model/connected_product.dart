@@ -259,18 +259,44 @@ class ProductsModel extends ConnectedProductsModel {
 }
 
 class UserModel extends ConnectedProductsModel {
+  Timer _authTimer;
   User get user {
     return _authenticatedUser;
   }
 
   void autoAuthenticated() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String expirtTimeString = prefs.getString('expiryTime');
     final String token = prefs.getString('token');
-    final String userEmial = prefs.getString('userEmial');
-    final String userId = prefs.getString('userId');
-    _authenticatedUser = new User(email: userEmial, id: userId, token: token);
-    notifyListeners();
-    if (token != null) {}
+    if (token != null) {
+      DateTime now = DateTime.now();
+      final parseExpiryTime = DateTime.parse(expirtTimeString);
+      if (parseExpiryTime.isBefore(now)) {
+        _authenticatedUser = null;
+        notifyListeners();
+        return;
+      }
+      final String userEmail = prefs.getString('userEmail');
+      final String userId = prefs.getString('userId');
+      final tokenLifeSpan = parseExpiryTime.difference(now).inSeconds;
+      setAuthTimeOut(tokenLifeSpan);
+      _authenticatedUser = new User(email: userEmail, id: userId, token: token);
+      notifyListeners();
+    }
+  }
+
+  void logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove("token");
+    await prefs.remove("userEmail");
+    await prefs.remove("userId");
+    _authTimer.cancel();
+    print('Logout');
+  }
+
+  void setAuthTimeOut(int time) {
+    cPrint("Time Remaining for auto logout ${time}");
+    _authTimer = Timer(Duration(milliseconds: time), logout);
   }
 
   Future<Map<String, dynamic>> authenticate(String email, String password,
@@ -306,11 +332,16 @@ class UserModel extends ConnectedProductsModel {
             id: responseData['localid'],
             email: email,
             token: responseData['idToken']);
+        setAuthTimeOut(int.parse(responseData['expiresIn']));
+        final now = DateTime.now();
+        final expiryTime =
+            now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
         cPrint(message);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', _authenticatedUser.token);
         await prefs.setString('userEmail', _authenticatedUser.email);
         await prefs.setString('userID', _authenticatedUser.id);
+        await prefs.setString('expiryTime', expiryTime.toIso8601String());
         await autoAuthenticated();
       } else if (responseData.containsKey('error')) {
         if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
