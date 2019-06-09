@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/scoped_model/main.dart';
+import 'package:flutter_app/widgets/form_input/image.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class ProductEditPage extends StatefulWidget {
@@ -196,6 +197,7 @@ class ProductEditPageState extends State<ProductEditPage> {
                     SizedBox(
                       height: 30,
                     ),
+                    ImageInput(),
                     _buildRaisedButton()
                   ],
                 ))));
