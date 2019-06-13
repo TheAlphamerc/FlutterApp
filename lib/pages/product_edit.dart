@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/scoped_model/main.dart';
@@ -20,14 +22,20 @@ class ProductEditPageState extends State<ProductEditPage> {
     'title': null,
     'description': null,
     'price': null,
-    'image':
-        'https://www.google.com/imgres?imgurl=https%3A%2F%2Fhips.hearstapps.com%2Fdigitalspyuk.cdnds.net%2F16%2F38%2F1474456727-batman-ben-affleck.jpg%3Fcrop%3D1.00xw%3A0.893xh%3B0%2C0%26resize%3D480%3A*&imgrefurl=https%3A%2F%2Fwww.digitalspy.com%2Fmovies%2Fa27683260%2Fthe-batman-robert-pattinson-new-trilogy%2F&docid=3EiMkLUSLDPI-M&tbnid=IjM-TLCNOhOX4M%3A&vet=10ahUKEwjG-tS_usriAhXREHIKHQJHAb8QMwh7KAowCg..i&w=480&h=241&bih=549&biw=1280&q=batman&ved=0ahUKEwjG-tS_usriAhXREHIKHQJHAb8QMwh7KAowCg&iact=mrc&uact=8',
+    'image': null
   };
+  final _titleTextController = TextEditingController();
+  final _descriptionTextController = TextEditingController();
   @override
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Widget _buildTitle(Product product) {
+    if (product == null && _titleTextController.text.trim() == '') {
+      _titleTextController.text = '';
+    } else if (product != null && _titleTextController.text.trim() == '') {
+      _titleTextController.text = product.title;
+    }
     return TextFormField(
-      initialValue: product != null ? product.title : "",
+      controller: _titleTextController,
       decoration:
           InputDecoration(labelText: 'Product Tile', icon: Icon(Icons.face)),
       validator: (String value) {
@@ -43,9 +51,15 @@ class ProductEditPageState extends State<ProductEditPage> {
   }
 
   Widget _buildDescription(Product product) {
+    if (product == null && _descriptionTextController.text.trim() == '') {
+      _descriptionTextController.text = '';
+    } else if (product != null &&
+        _descriptionTextController.text.trim() == '') {
+      _descriptionTextController.text = product.description;
+    }
     return TextFormField(
-      initialValue: product != null ? product.description : "",
       maxLines: 2,
+      controller: _descriptionTextController,
       decoration: InputDecoration(
           labelText: 'Product Description', icon: Icon(Icons.storage)),
       validator: (String value) {
@@ -122,18 +136,23 @@ class ProductEditPageState extends State<ProductEditPage> {
     });
   }
 
+  void _setImage(File file) {
+    _formData['image'] = file;
+  }
+
   void _submitForm(
       Function addProduct, Function updateProduct, Function setSelectedProduct,
-      [String selectedProduct]) {
-    if (!_formKey.currentState.validate()) {
+      [String selectedProductIndex]) {
+    if (!_formKey.currentState.validate() ||
+        (_formData['image'] == null && selectedProductIndex == null)) {
       return;
     }
     _formKey.currentState.save();
-    if (selectedProduct == null) {
+    if (selectedProductIndex == null) {
       print('[Debug] Form is ready in Add new form');
       addProduct(
-        _formData['title'],
-        _formData['description'],
+        _titleTextController.text,
+        _descriptionTextController.text,
         _formData['image'],
         _formData['price'],
       ).then((bool isOk) {
@@ -153,7 +172,7 @@ class ProductEditPageState extends State<ProductEditPage> {
       });
     } else {
       print('[Debug] Form is ready in Edit  form');
-      updateProduct(_formData['title'], _formData['description'],
+      updateProduct(_titleTextController.text, _descriptionTextController.text,
               _formData['image'], _formData['price'])
           .then((bool isOk) {
         if (!isOk) {
@@ -197,7 +216,7 @@ class ProductEditPageState extends State<ProductEditPage> {
                     SizedBox(
                       height: 30,
                     ),
-                    ImageInput(),
+                    ImageInput(_setImage, product),
                     _buildRaisedButton()
                   ],
                 ))));

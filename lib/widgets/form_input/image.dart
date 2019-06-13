@@ -1,9 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/product.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
 
 class ImageInput extends StatefulWidget {
+  final Function setImage;
+  final Product product;
+  ImageInput(this.setImage, this.product);
   @override
   State<StatefulWidget> createState() {
     return _ImageInputState();
@@ -13,10 +17,11 @@ class ImageInput extends StatefulWidget {
 class _ImageInputState extends State<ImageInput> {
   File _imageFile;
   void _getImage(BuildContext context, ImageSource source) {
-    ImagePicker.pickImage(source: source, maxWidth: 400).then((File file) {
+    ImagePicker.pickImage(source: source, maxWidth: 400).then((File image) {
       setState(() {
-        _imageFile = file;
+        _imageFile = image;
       });
+      widget.setImage(image);
       Navigator.pop(context);
     });
   }
@@ -91,7 +96,7 @@ class _ImageInputState extends State<ImageInput> {
                 _imageFile,
                 fit: BoxFit.cover,
                 height: 300,
-                width: MediaQuery.of(context).size.width ,
+                width: MediaQuery.of(context).size.width,
                 alignment: Alignment.topCenter,
               )
       ],
