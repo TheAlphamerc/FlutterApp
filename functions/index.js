@@ -4,6 +4,7 @@ const cors = require('cors')({
 })
 const BusBoy = require('busboy');
 const os = require('os');
+``
 const path = require('path');
 const fs = require('fs');
 const fbAdmin = require('firebase-admin');
@@ -28,73 +29,91 @@ const gcs = new Storage({
     keyFilename: 'flutter-app-product.json'
 
 });
+
 fbAdmin.initializeApp({
     credential: fbAdmin.credential.cert(require('./flutter-app-product.json'))
 });
+
 exports.storeImage = functions.https.onRequest((req, res) => {
     return cors(req, res, () => {
         if (req.method !== 'POST') {
             return res.status(500).json({
-                message: 'method not allowed.'
+                message: 'Not allowed.'
             });
         }
-        if (req.headers.authorization || req.headers.authorization.startsWith('Bearer ')) {
+
+        if (
+            !req.headers.authorization ||
+            !req.headers.authorization.startsWith('Bearer ')
+        ) {
             return res.status(401).json({
-                message: 'unauthorised'
+                error: 'Unauthorized.'
             });
         }
+
         let idToken;
         idToken = req.headers.authorization.split('Bearer ')[1];
-        const busBoy = new BusBoy({
+
+        const busboy = new BusBoy({
             headers: req.headers
         });
         let uploadData;
         let oldImagePath;
-        busBoy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-            const filepath = path.join(os.tmpdir(), filename);
+
+        busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+            const filePath = path.join(os.tmpdir(), filename);
             uploadData = {
-                filepath: filepath,
+                filePath: filePath,
                 type: mimetype,
                 name: filename
             };
-            file.pipe(fs.createReadStream(filepath));
+            file.pipe(fs.createWriteStream(filePath));
         });
-        busBoy.on('field', (filename, value) => {
+
+        busboy.on('field', (fieldname, value) => {
             oldImagePath = decodeURIComponent(value);
         });
-        busBoy.on('finish', () => {
+
+        busboy.on('finish', () => {
             const bucket = gcs.bucket('flutter-app-32074.appspot.com');
             const id = uuid();
             let imagePath = 'images/' + id + '-' + uploadData.name;
             if (oldImagePath) {
                 imagePath = oldImagePath;
             }
-            return fbAdmin.auth().verifyToken(idToken).then(decodedToken => {
-                return bucket.upload(uploadData.filepath, {
-                    uploadType: 'media',
-                    destination: imagePath,
-                    metadata: {
+
+            return fbAdmin
+                .auth()
+                .verifyIdToken(idToken)
+                .then(decodedToken => {
+                    return bucket.upload(uploadData.filePath, {
+                        uploadType: 'media',
+                        destination: imagePath,
                         metadata: {
-                            contentType: uploadData.type,
-                            firbaseStorageDownloadToken: id
+                            metadata: {
+                                contentType: uploadData.type,
+                                firebaseStorageDownloadTokens: id
+                            }
                         }
-                    }
+                    });
+                })
+                .then(() => {
+                    return res.status(201).json({
+                        imageUrl: 'https://firebasestorage.googleapis.com/v0/b/' +
+                            bucket.name +
+                            '/o/' +
+                            encodeURIComponent(imagePath) +
+                            '?alt=media&token=' +
+                            id,
+                        imagePath: imagePath
+                    });
+                })
+                .catch(error => {
+                    return res.status(401).json({
+                        error: 'Unauthorized!'
+                    });
                 });
-            }).then(() => {
-                return res.status(200).json({
-                    imageUrl: 'https://firebasestorage.googleapis.com/v0/b/' +
-                        bucket.name +
-                        '/o/' +
-                        encodeURIComponent(imagePath) +
-                        '?alt=media&token=' + id,
-                    imagePath: imagePath
-                });
-            }).catch(error => {
-                res.status(401).json({
-                    message: 'unauthorised'
-                });
-            });
         });
-        return busBoy.end(req.rawBody);
+        return busboy.end(req.rawBody);
     });
 });

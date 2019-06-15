@@ -62,7 +62,7 @@ class ProductsModel extends ConnectedProductsModel {
     return _showFavourite;
   }
 
-  Future<Map<String, String>> uploadImage(File image,
+  Future<Map<String, dynamic>> uploadImage(File image,
       {String imagePath}) async {
     final mimeTypeData = lookupMimeType(image.path).split('/');
     final imageUploadRequest = http.MultipartRequest(
@@ -71,9 +71,32 @@ class ProductsModel extends ConnectedProductsModel {
             'https://us-central1-flutter-app-32074.cloudfunctions.net/storeImage'));
     final file = await http.MultipartFile.fromPath('image', image.path,
         contentType: MediaType(mimeTypeData[0], mimeTypeData[1]));
+    cPrint(file.filename);
+    cPrint(file.contentType);
+    cPrint("File Length ${file.length}");
     imageUploadRequest.files.add(file);
     if (imagePath != null) {
       imageUploadRequest.fields['imagePath'] = Uri.encodeComponent(imagePath);
+      cPrint("Image path ${imageUploadRequest.fields['imagePath']}");
+    }
+    imageUploadRequest.headers['Authorization'] =
+        'Bearer ${_authenticatedUser.token}';
+    // cPrint(imageUploadRequest.headers['Authorization']);
+    try {
+      final stramedResponse = await imageUploadRequest.send();
+      cPrint("Initiate Upload ${stramedResponse.statusCode}");
+      final response = await http.Response.fromStream(stramedResponse);
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        cPrint(
+            '[Error] firebase image upload. response : ${json.decode(response.body)}');
+        return null;
+      }
+      final responseData = json.decode(response.body);
+      cPrint("Response data ${responseData}");
+      return responseData;
+    } catch (error) {
+      cPrint("[Exception] ${error}");
+      return null;
     }
   }
 
@@ -81,12 +104,18 @@ class ProductsModel extends ConnectedProductsModel {
       String title, String description, File image, double price) async {
     try {
       _isLoading = true;
+      var uploadData = await uploadImage(image);
+      if (uploadData == null) {
+        cPrint('Image upload failed');
+        _isLoading = false;
+        return false;
+      }
       notifyListeners();
       final Map<String, dynamic> productData = {
         'title': title,
         'description': description,
-        'image':
-            'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
+        'imagePath': uploadData['imagePath'],
+        'imageUrl': uploadData['imageUrl'],
         'price': price,
         'email': _authenticatedUser.email,
         'userId': _authenticatedUser.id
@@ -106,7 +135,8 @@ class ProductsModel extends ConnectedProductsModel {
           id: responseData['name'],
           description: description,
           title: title,
-          image: image,
+          image: uploadData['imageUrl'],
+          imagePath: uploadData['imagePath'],
           price: price,
           userEmail: _authenticatedUser.email,
           userId: _authenticatedUser.id);
@@ -239,7 +269,8 @@ class ProductsModel extends ConnectedProductsModel {
             title: productData['title'],
             description: productData['description'],
             price: productData['price'],
-            image: productData['image'],
+            image: productData['imageUrl'],
+            imagePath: productData['imagePath'],
             userEmail: productData['email'],
             userId: productData['userId'],
             isFavourite: productData['wishlistUsers'] == null
@@ -270,6 +301,7 @@ class ProductsModel extends ConnectedProductsModel {
         description: selectedProduct.description,
         title: selectedProduct.title,
         image: selectedProduct.image,
+        imagePath: selectedProduct.imagePath,
         price: selectedProduct.price,
         isFavourite: newFavouriteStatus,
         userEmail: selectedProduct.userEmail,
@@ -286,6 +318,7 @@ class ProductsModel extends ConnectedProductsModel {
             description: selectedProduct.description,
             title: selectedProduct.title,
             image: selectedProduct.image,
+            imagePath: selectedProduct.imagePath,
             price: selectedProduct.price,
             isFavourite: !newFavouriteStatus,
             userEmail: selectedProduct.userEmail,
