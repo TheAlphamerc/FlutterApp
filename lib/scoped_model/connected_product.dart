@@ -64,6 +64,8 @@ class ProductsModel extends ConnectedProductsModel {
 
   Future<Map<String, dynamic>> uploadImage(File image,
       {String imagePath}) async {
+    _isLoading = true;
+    notifyListeners();
     final mimeTypeData = lookupMimeType(image.path).split('/');
     final imageUploadRequest = http.MultipartRequest(
         'POST',
@@ -89,13 +91,19 @@ class ProductsModel extends ConnectedProductsModel {
       if (response.statusCode != 200 && response.statusCode != 201) {
         cPrint(
             '[Error] firebase image upload. response : ${json.decode(response.body)}');
+        _isLoading = false;
+        notifyListeners();
         return null;
       }
       final responseData = json.decode(response.body);
       cPrint("Response data ${responseData}");
+      _isLoading = false;
+      notifyListeners();
       return responseData;
     } catch (error) {
       cPrint("[Exception] ${error}");
+      _isLoading = false;
+      notifyListeners();
       return null;
     }
   }
@@ -104,12 +112,14 @@ class ProductsModel extends ConnectedProductsModel {
       String title, String description, File image, double price) async {
     try {
       _isLoading = true;
+
       var uploadData = await uploadImage(image);
       if (uploadData == null) {
         cPrint('Image upload failed');
         _isLoading = false;
         return false;
       }
+
       notifyListeners();
       final Map<String, dynamic> productData = {
         'title': title,
@@ -153,18 +163,30 @@ class ProductsModel extends ConnectedProductsModel {
   }
 
   Future<bool> updateProduct(
-      String title, String description, String image, double price) async {
+      String title, String description, File image, double price) async {
     try {
       _isLoading = true;
       notifyListeners();
+      String imageUrl = selectedProduct.image;
+      String imagePath = selectedProduct.imagePath;
+      if (image != null) {
+        var uploadData = await uploadImage(image);
+        if (uploadData == null) {
+          cPrint('Image upload failed');
+          _isLoading = false;
+          return false;
+        }
+        imageUrl = uploadData['imageUrl'];
+        imagePath = uploadData['imagePath'];
+      }
       final Map<String, dynamic> productData = {
         'title': title,
         'description': description,
-        'image':
-            'http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg',
+        'imagePath': imagePath,
+        'imageUrl': imageUrl,
         'price': price,
         'email': selectedProduct.userEmail,
-        'userId': selectedProduct.id
+        'userId': selectedProduct.userId
       };
       final http.Response response = await http.put(
           'https://flutter-app-32074.firebaseio.com/products/${selectedProduct.id}.json?auth=${_authenticatedUser.token}',
@@ -181,8 +203,8 @@ class ProductsModel extends ConnectedProductsModel {
           id: selectedProduct.id,
           description: description,
           title: title,
-          image:
-              "http://tes77.com/wp-content/uploads/2017/10/dark-chocolate-bar-squares.jpg",
+          image: imageUrl,
+          imagePath: imagePath,
           price: price,
           userEmail: selectedProduct.userEmail,
           userId: selectedProduct.userId);
@@ -282,7 +304,8 @@ class ProductsModel extends ConnectedProductsModel {
       _products = fetchedProductList.where((Product x) {
         return x.userId == _authenticatedUser.id;
       }).toList();
-
+      cPrint("Product count ${_products.length}");
+      cPrint("fetchedProductList count ${_products.length}");
       _isLoading = false;
       notifyListeners();
       _selSelectedId = null;

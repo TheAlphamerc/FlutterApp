@@ -65,6 +65,24 @@ class _ImageInputState extends State<ImageInput> {
 
   @override
   Widget build(BuildContext context) {
+    Widget previewImage = Text('Please select an image');
+    if (_imageFile != null) {
+      previewImage = Image.file(
+        _imageFile,
+        fit: BoxFit.cover,
+        height: 300,
+        width: MediaQuery.of(context).size.width,
+        alignment: Alignment.topCenter,
+      );
+    } else if (widget.product != null) {
+      previewImage = Image.network(
+        widget.product.image,
+        fit: BoxFit.cover,
+        height: 300,
+        width: MediaQuery.of(context).size.width,
+        alignment: Alignment.topCenter,
+      );
+    }
     final buttonColor = Theme.of(context).accentColor;
     return Column(
       children: <Widget>[
@@ -90,15 +108,7 @@ class _ImageInputState extends State<ImageInput> {
         SizedBox(
           height: 10,
         ),
-        _imageFile == null
-            ? Text("Please pick an image")
-            : Image.file(
-                _imageFile,
-                fit: BoxFit.cover,
-                height: 300,
-                width: MediaQuery.of(context).size.width,
-                alignment: Alignment.topCenter,
-              )
+        previewImage
       ],
     );
   }
