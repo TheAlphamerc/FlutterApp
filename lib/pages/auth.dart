@@ -19,11 +19,15 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   final Map<String, dynamic> _formData = {'email': null, 'password': null};
 
   AnimationController _controller;
+  Animation<Offset> _slideAnimation;
   @override
   void initState() {
     super.initState();
     _controller =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _slideAnimation = Tween<Offset>(begin: Offset(0.0, -1.5), end: Offset.zero)
+        .animate(
+            CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
   }
 
   Widget _buildEmail() {
@@ -61,18 +65,21 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
   Widget _buildConfirmPassword() {
     return FadeTransition(
       opacity: CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-      child: TextFormField(
-        decoration: InputDecoration(
-            labelText: 'Confirm password',
-            icon: Icon(Icons.enhanced_encryption)),
-        obscureText: true,
-        validator: (String value) {
-          if (_passwordTextController.text != value &&
-              _authMode == AuthMode.SignUp) {
-            return "Password do not match";
-          }
-        },
-        onSaved: (value) {},
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: TextFormField(
+          decoration: InputDecoration(
+              labelText: 'Confirm password',
+              icon: Icon(Icons.enhanced_encryption)),
+          obscureText: true,
+          validator: (String value) {
+            if (_passwordTextController.text != value &&
+                _authMode == AuthMode.SignUp) {
+              return "Password do not match";
+            }
+          },
+          onSaved: (value) {},
+        ),
       ),
     );
   }
