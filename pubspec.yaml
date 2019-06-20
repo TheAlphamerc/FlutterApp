@@ -29,6 +29,8 @@ dependencies:
   rxdart: ^0.22.0
   image_picker_modern: ^0.4.12+2
   mime: ^0.9.1
+  url_launcher: ^5.0.3
+
 
 dev_dependencies:
   flutter_test:
