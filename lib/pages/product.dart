@@ -66,30 +66,44 @@ class ProductPage extends StatelessWidget {
           return Future.value(false);
         },
         child: Scaffold(
-            appBar: AppBar(
-              title: Text(product.title),
-            ),
-            body: Column(
-              children: <Widget>[
-                Hero(
-                  tag: product.id,
-                    child: FadeInImage(
-                  image: NetworkImage(product.image),
-                  height: 300.0,
-                  fit: BoxFit.cover,
-                  placeholder: AssetImage('assets/food.jpg'),
-                )),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: TitleDefault(product.title),
-                ),
-                _buildAddressPriceRow("San Square Frincisco", product.price),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    product.description,
-                    textAlign: TextAlign.center,
+            //     appBar: AppBar(
+            //       title: Text(product.title),
+            //     ),
+
+            body: CustomScrollView(
+              slivers: <Widget>[
+                SliverAppBar(
+                  expandedHeight: 256,
+                  pinned: true,
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: Text(product.title),
+                    background: Hero(
+                        tag: product.id,
+                        child: FadeInImage(
+                          image: NetworkImage(product.image),
+                          height: 300.0,
+                          fit: BoxFit.cover,
+                          placeholder: AssetImage('assets/food.jpg'),
+                        )),
                   ),
+                ),
+                SliverList(
+                  delegate: SliverChildListDelegate([
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      alignment: Alignment.center,
+                      child: TitleDefault(product.title),
+                    ),
+                    _buildAddressPriceRow(
+                        "San Square Frincisco", product.price),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        product.description,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  ]),
                 )
               ],
             ),
