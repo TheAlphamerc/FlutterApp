@@ -6,6 +6,7 @@ import 'package:flutter_app/pages/product.dart';
 import 'package:flutter_app/pages/products.dart';
 import 'package:flutter_app/pages/products_Admin.dart';
 import 'package:flutter_app/scoped_model/main.dart';
+import 'package:flutter_app/widgets/helper/custom_route.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 void main() {
@@ -72,7 +73,7 @@ class _MyAppState extends State<MyApp> {
                 Product product = _model.allProducts.firstWhere((x) {
                   return x.id == productId;
                 });
-                return MaterialPageRoute<bool>(
+                return CustomRoute<bool>(
                     builder: (BuildContext context) => !_isAuthenticated ? AuthPage() : ProductPage(product));
               }
             },
