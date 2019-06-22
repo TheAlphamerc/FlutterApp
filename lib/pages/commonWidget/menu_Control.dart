@@ -14,6 +14,7 @@ class MenuControlView extends StatelessWidget {
       children: <Widget>[
         AppBar(
           title: Text('Choose'),
+          elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0 : 4,
           automaticallyImplyLeading: false,
         ),
         ListTile(

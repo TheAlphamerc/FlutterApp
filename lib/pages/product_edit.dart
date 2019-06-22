@@ -1,9 +1,10 @@
 import 'dart:io';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/product.dart';
 import 'package:flutter_app/scoped_model/main.dart';
 import 'package:flutter_app/widgets/form_input/image.dart';
+import 'package:flutter_app/widgets/plateformSpecific_Widget/activityIndicator.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class ProductEditPage extends StatefulWidget {
@@ -123,7 +124,7 @@ class ProductEditPageState extends State<ProductEditPage> {
         builder: (BuildContext context, Widget widget, MainModel model) {
       {
         return model.isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? Center(child: AppActivityIndicator())
             : RaisedButton(
                 textColor: Colors.white,
                 child: Text('Save'),
@@ -233,6 +234,8 @@ class ProductEditPageState extends State<ProductEditPage> {
             : Scaffold(
                 appBar: AppBar(
                   title: Text('Edit Item'),
+                  elevation:
+                      Theme.of(context).platform == TargetPlatform.iOS ? 0 : 4,
                 ),
                 body: pageContent);
       }

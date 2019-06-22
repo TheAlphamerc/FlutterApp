@@ -6,6 +6,7 @@ import 'package:flutter_app/pages/product.dart';
 import 'package:flutter_app/pages/products.dart';
 import 'package:flutter_app/pages/products_Admin.dart';
 import 'package:flutter_app/scoped_model/main.dart';
+import 'package:flutter_app/shared/adaptive_theme.dart';
 import 'package:flutter_app/widgets/helper/custom_route.dart';
 import 'package:scoped_model/scoped_model.dart';
 
@@ -41,13 +42,7 @@ class _MyAppState extends State<MyApp> {
     return ScopedModel<MainModel>(
         model: _model,
         child: MaterialApp(
-            theme: ThemeData(
-                primaryColor: Colors.deepOrange,
-                accentColor: Colors.deepPurple,
-                brightness: Brightness.light,
-                buttonColor: Colors.deepPurple,
-                fontFamily: 'Montserrat'),
-
+            theme: getAdaptiveThemeData(context),
             // home: AuthPage(),
             routes: {
               // '/': (BuildContext context) => ProductsPage(_products),
@@ -74,12 +69,14 @@ class _MyAppState extends State<MyApp> {
                   return x.id == productId;
                 });
                 return CustomRoute<bool>(
-                    builder: (BuildContext context) => !_isAuthenticated ? AuthPage() : ProductPage(product));
+                    builder: (BuildContext context) =>
+                        !_isAuthenticated ? AuthPage() : ProductPage(product));
               }
             },
             onUnknownRoute: (RouteSettings settings) {
               return MaterialPageRoute<bool>(
-                  builder: (BuildContext context) => !_isAuthenticated ? AuthPage() : ProductsPage(_model));
+                  builder: (BuildContext context) =>
+                      !_isAuthenticated ? AuthPage() : ProductsPage(_model));
             }));
   }
 }

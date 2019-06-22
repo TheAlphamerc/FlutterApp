@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/auth.dart';
 import 'package:flutter_app/scoped_model/main.dart';
+import 'package:flutter_app/widgets/plateformSpecific_Widget/activityIndicator.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class AuthPage extends StatefulWidget {
@@ -98,7 +99,7 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
 
   Widget _buildSubmitButton(MainModel model) {
     return model.isLoading
-        ? CircularProgressIndicator()
+        ? AppActivityIndicator()
         : RaisedButton(
             textColor: Colors.white,
             child: Text("Login"),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/commonWidget/menu_Control.dart';
 import 'package:flutter_app/scoped_model/main.dart';
+import 'package:flutter_app/widgets/plateformSpecific_Widget/activityIndicator.dart';
 import 'package:flutter_app/widgets/products/Products.dart';
 import 'package:scoped_model/scoped_model.dart';
 
@@ -31,7 +32,7 @@ class _ProductsPageState extends State<ProductsPage> {
       if (model.displayedproducts.length > 0 && !model.isLoading) {
         content = ProductListView();
       } else if (model.isLoading) {
-        content = Center(child: CircularProgressIndicator());
+        content = Center(child: AppActivityIndicator());
       }
       return RefreshIndicator(onRefresh: model.fetchProducts, child: content);
     });
@@ -43,6 +44,7 @@ class _ProductsPageState extends State<ProductsPage> {
       drawer: MenuControlView(context),
       appBar: AppBar(
         title: Text("EasyList"),
+        elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0 : 4,
         actions: <Widget>[
           ScopedModelDescendant<MainModel>(
               builder: (BuildContext context, Widget widget, MainModel model) {

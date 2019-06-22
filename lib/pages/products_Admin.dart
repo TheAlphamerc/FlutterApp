@@ -15,6 +15,7 @@ class ProductAdminPage extends StatelessWidget {
           drawer: MenuControlView(context),
           appBar: AppBar(
             title: Text("EasyList"),
+            elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0 : 4,
             bottom: TabBar(
               tabs: <Widget>[
                 Tab(
