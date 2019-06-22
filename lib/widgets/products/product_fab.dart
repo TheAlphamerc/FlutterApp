@@ -4,6 +4,7 @@ import 'package:flutter_app/scoped_model/main.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
+
 class ProductFAB extends StatefulWidget {
   final Product product;
   ProductFAB(this.product);
@@ -74,8 +75,10 @@ class _ProductFABState extends State<ProductFAB> with TickerProviderStateMixin {
                   model.toggleProductFavouriteToggle();
                 },
                 child: Icon(
-                  model.selectedProduct.isFavourite
-                      ? Icons.favorite
+                  model.selectedProduct != null
+                      ? model.selectedProduct.isFavourite
+                          ? Icons.favorite
+                          : Icons.favorite_border
                       : Icons.favorite_border,
                   color: Colors.red,
                 ),
@@ -95,13 +98,16 @@ class _ProductFABState extends State<ProductFAB> with TickerProviderStateMixin {
                 }
               },
               child: AnimatedBuilder(
-                animation: _controller,
+                  animation: _controller,
                   builder: (BuildContext context, Widget widget) {
-                return Transform(
-                  alignment: FractionalOffset.center,
-                  transform: Matrix4.rotationZ(_controller.value *.5 * math.pi),
-                  child: Icon(_controller.isDismissed ? Icons.more_vert :Icons.close));
-              }),
+                    return Transform(
+                        alignment: FractionalOffset.center,
+                        transform:
+                            Matrix4.rotationZ(_controller.value * .5 * math.pi),
+                        child: Icon(_controller.isDismissed
+                            ? Icons.more_vert
+                            : Icons.close));
+                  }),
             ),
           ),
         ],
